@@ -1,0 +1,14 @@
+certifi==2023.5.7
+charset-normalizer==3.1.0
+docutils==0.20.1
+future==0.18.3
+idna==3.4
+iso8601==1.1.0
+Kivy==2.2.0
+Kivy-Garden==0.1.5
+Pygments==2.15.1
+pyserial==3.5
+PyYAML==6.0
+requests==2.31.0
+serial==0.0.97
+urllib3==2.0.2
