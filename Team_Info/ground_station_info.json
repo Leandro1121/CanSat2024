@@ -1,0 +1,41 @@
+{
+    "team_ID": 1071,
+    
+    "collectable_data": {
+        "Altitude":0,
+        "GPS":1,
+        "GYRO": 2,
+        "temperature":3,
+        "GPS_time":4,
+        "GPS_altitude":5,
+        "GPS_latitude":6,
+        "GPS_longitude":7,
+        "GPS_sats":8
+    },
+    "packet_format": {
+        "team_id": 0,
+        "mission_time": 1,
+        "packet_count": 2,
+        "flight_mode": 3,
+        "flight_state": 4,
+        "altitude": 5,
+        "More_vars": 6,
+        "temperature": 7,
+        "GPS_time": 8,
+        "GPS_altitude": 9,
+        "GPS_latitude": 10,
+        "GPS_longitude":11,
+        "GPS_sats": 12,
+        "GYRO": 13,
+        "CMD_ECHO": 14
+    },   
+    "flight_vals": {
+        "team_id": 0,
+        "mission_time": 1,
+        "packet_count": 2,
+        "flight_mode": 3,
+        "flight_state": 4,
+        "More_vars": 5,
+        "CMD_ECHO": 5
+    }
+}

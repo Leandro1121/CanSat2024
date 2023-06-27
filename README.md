@@ -10,3 +10,8 @@
 4. Instructions Before Pushing to Repo
     Run: pip freeze > requirements.txt
     This downloads current versions of any packages
+
+GPS Data modification: 
+1. https://www.openstreetmap.org/export
+2. Select area you want to export and add to '_resources file'. 
+3.

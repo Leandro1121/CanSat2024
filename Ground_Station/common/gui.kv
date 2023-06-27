@@ -1,0 +1,404 @@
+WindowManager:
+    LoginPage:
+    MainWindow:
+
+<LoginPage>:
+    name: "login"
+    BoxLayout:
+
+        size: root.width, root.height
+        orientation: 'vertical'
+        Label:
+            text: "Login"
+            font_size: 32
+        Button:
+            text: "Next Screen"
+            font_size: 32
+            on_release: 
+                app.root.current = "gui"
+                root.InitializeConnection
+        <SerialPortDropDown>:
+            name: "dropDown"
+
+    
+<MainWindow>:
+    name: "gui"
+    BoxLayout:
+
+        size: root.width, root.height
+        orientation: 'vertical'
+        Label:
+            text: "Login"
+            font_size: 32
+        Button:
+            text: "Next Screen"
+            font_size: 32
+            on_release: app.root.current = "gui"
+
+
+<AltitudePlotter>:
+    canvas.before:
+        Color:
+            rgb: [0.15, 0.15, 0.15, 1]
+        Rectangle:
+            size: self.siz
+    BoxLayout:
+
+        size: root.width, root.height
+        orientation: 'vertical'
+        padding: 10,10,10,10
+
+        BoxLayout: 
+            size_hint: 1, 0.3
+            orientation: "horizontal"
+
+            BoxLayout:
+                size_hint: 0.5,0.5
+                orientation: 'vertical'
+                Label: 
+                    text: "Logo"
+
+            BoxLayout:
+                size_hint: 0.5,0.5
+                orientation: 'vertical'
+                BoxLayout: 
+                    size_hint: 1, 1
+                    orientation: "horizontal"
+                    Label:
+                        text: "Mission Time:"
+                BoxLayout: 
+                    size_hint: 1, 1
+                    orientation: "horizontal"
+                    Label:
+                        text: "Variable"
+
+            BoxLayout:
+                size_hint: 0.5,0.5
+                orientation: 'vertical'
+                BoxLayout: 
+                    size_hint: 1, 1
+                    orientation: "horizontal"
+                    Label:
+                        text: "Mission Time:"
+                BoxLayout: 
+                    size_hint: 1, 1
+                    orientation: "horizontal"
+                    Label:
+                        text: "Variable"
+
+            BoxLayout:
+                size_hint: 0.5,0.5
+                orientation: 'vertical'
+                BoxLayout: 
+                    size_hint: 1, 1
+                    orientation: "horizontal"
+                    Label:
+                        text: "Mission Time:"
+                BoxLayout: 
+                    size_hint: 1, 1
+                    orientation: "horizontal"
+                    Label:
+                        text: "Variable"
+
+        BoxLayout:
+
+            size_hint: 1,1
+            orientation: 'horizontal' 
+
+            BoxLayout:
+                size_hint: 1, 1
+                orientation: 'vertical'
+
+                ScrollView:
+                    id: view
+                    do_scroll_x: True
+                    do_scroll_y: True
+                    orientation: 'vertical'
+                    size_hint: 1, 0.5
+                    scroll_type: ['content']
+                    bar_width: 4
+                    bar_color: 1,1,1,1
+                    bar_inactive: 1,1,1,0.5
+
+                    BoxLayout:
+
+                        orientation: 'vertical'
+                        size_hint: None, 1
+                        width: view.width * root.zoom
+
+                        BoxLayout:
+                            id: voltage
+                            size_hint: 1, 0.5
+                            orientation: 'vertical'
+
+                BoxLayout:
+                    id: zoom
+                    size_hint: 1, 0.1
+                    orientation: 'horizontal'
+
+                    Button:
+                        text: '-'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('-')
+
+
+                    Label:
+                        text: str(root.zoom) + 'x'
+                    
+                    Button: 
+                        text: '+'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('+')
+
+            BoxLayout:
+                size_hint: 1, 1
+                orientation: 'vertical'
+                
+
+                ScrollView:
+                    id: view
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    orientation: 'vertical'
+                    size_hint: 1, 0.5
+                    scroll_type: ['content']
+                    bar_width: 4
+                    bar_color: 1,1,1,1
+                    bar_inactive: 1,1,1,0.5
+
+                    BoxLayout:
+
+                        orientation: 'vertical'
+                        size_hint: None, 1
+                        width: view.width * root.zoom
+
+                        BoxLayout:
+                            id: voltage
+                            size_hint: 1, 0.5
+                            orientation: 'vertical'
+
+                BoxLayout:
+                    id: zoom
+                    size_hint: 1, 0.1
+                    orientation: 'horizontal'
+                    
+                    Button:
+                        text: '-'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('-')
+
+
+                    Label:
+                        text: str(root.zoom) + 'x'
+                    
+                    Button: 
+                        text: '+'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('+')
+
+            BoxLayout:
+                size_hint: 1, 1
+                orientation: 'vertical'
+                
+
+                ScrollView:
+                    id: view
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    orientation: 'vertical'
+                    size_hint: 1, 0.5
+                    scroll_type: ['content']
+                    bar_width: 4
+                    bar_color: 1,1,1,1
+                    bar_inactive: 1,1,1,0.5
+
+                    BoxLayout:
+
+                        orientation: 'vertical'
+                        size_hint: None, 1
+                        width: view.width * root.zoom
+
+                        BoxLayout:
+                            id: graph
+                            size_hint: 1, 0.5
+                            orientation: 'vertical'
+
+                BoxLayout:
+                    id: zoom
+                    size_hint: 1, 0.1
+                    orientation: 'horizontal'
+                    
+
+                    Button:
+                        text: '-'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('-')
+
+
+                    Label:
+                        text: str(root.zoom) + 'x'
+                    
+                    Button: 
+                        text: '+'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('+')
+
+        BoxLayout:
+
+            size_hint: 1,1
+            orientation: 'horizontal' 
+
+            BoxLayout:
+                size_hint: 1, 1
+                orientation: 'vertical'
+                
+
+                ScrollView:
+                    id: view
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    orientation: 'vertical'
+                    size_hint: 1, 0.5
+                    scroll_type: ['content']
+                    bar_width: 4
+                    bar_color: 1,1,1,1
+                    bar_inactive: 1,1,1,0.5
+
+                    BoxLayout:
+
+                        orientation: 'vertical'
+                        size_hint: None, 1
+                        width: view.width * root.zoom
+
+                        BoxLayout:
+                            id: voltage
+                            size_hint: 1, 0.5
+                            orientation: 'vertical'
+
+                BoxLayout:
+                    id: zoom
+                    size_hint: 1, 0.1
+                    orientation: 'horizontal'
+                    
+
+                    Button:
+                        text: '-'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('-')
+
+
+                    Label:
+                        text: str(root.zoom) + 'x'
+                    
+                    Button: 
+                        text: '+'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('+')
+
+            BoxLayout:
+                size_hint: 1, 1
+                orientation: 'vertical'
+                
+
+                ScrollView:
+                    id: view
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    orientation: 'vertical'
+                    size_hint: 1, 0.5
+                    scroll_type: ['content']
+                    bar_width: 4
+                    bar_color: 1,1,1,1
+                    bar_inactive: 1,1,1,0.5
+
+                    BoxLayout:
+
+                        orientation: 'vertical'
+                        size_hint: None, 1
+                        width: view.width * root.zoom
+
+                        BoxLayout:
+                            id: graph
+                            size_hint: 1, 0.5
+                            orientation: 'vertical'
+
+                BoxLayout:
+                    id: zoom
+                    size_hint: 1, 0.1
+                    orientation: 'horizontal'
+                    
+
+                    Button:
+                        text: '-'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('-')
+
+
+                    Label:
+                        text: str(root.zoom) + 'x'
+                    
+                    Button: 
+                        text: '+'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('+')
+
+            BoxLayout:
+                size_hint: 1, 1
+                orientation: 'vertical'
+                
+
+                ScrollView:
+                    id: view
+                    do_scroll_x: True
+                    do_scroll_y: False
+                    orientation: 'vertical'
+                    size_hint: 1, 0.5
+                    scroll_type: ['content']
+                    bar_width: 4
+                    bar_color: 1,1,1,1
+                    bar_inactive: 1,1,1,0.5
+
+                    BoxLayout:
+
+                        orientation: 'vertical'
+                        size_hint: None, 1
+                        width: view.width * root.zoom
+
+                        BoxLayout:
+                            id: graph
+                            size_hint: 1, 0.5
+                            orientation: 'vertical'
+
+                BoxLayout:
+                    id: zoom
+                    size_hint: 1, 0.1
+                    orientation: 'horizontal'
+                    
+
+                    Button:
+                        text: '-'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('-')
+
+
+                    Label:
+                        text: str(root.zoom) + 'x'
+                    
+                    Button: 
+                        text: '+'
+                        size_hint_x: None
+                        width: self.height
+                        on_release: root.update_zoom('+')
+
+

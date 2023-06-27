@@ -1,0 +1,326 @@
+WindowManager:
+    HomePage:
+    GCS_Page:
+    RawDataDisplay:
+    
+    
+    
+
+
+# ! ================= Homepage and Any dependencies ================= 
+<HomePage>:
+
+    name: "homepage"
+    canvas.before:
+        Rectangle:
+
+            pos: self.pos
+            size: self.size
+            source: '../_static/homepage_background.jpeg'
+                
+    RoundedButton:
+
+        size_hint: 0.2,0.3
+        pos_hint: {"center_x": 0.82, "center_y":0.55}
+        on_release: root.manager.current = "GCS"
+        disabled: root.connection_status
+    
+    Button:
+        background_color: (0,0,0,0)
+        background_normal: ''
+        canvas.before:
+            Color:
+                rgba: (33/255, 134/255, 222/255,1)
+            RoundedRectangle:
+                size: self.size
+                pos: self.pos
+                radius: [58]
+        size_hint: 0.15,0.09
+        text: "Refresh Ports"
+        color: (0,0,0,1)
+        on_release: root.RefreshPorts()
+        pos_hint: {"center_x": 0.12, "center_y":0.2}
+        radius:[58]
+
+        
+    Label:
+
+        id: port_info_label
+        text:""
+        size_hint: 0.05, 0.1
+        pos_hint: {"x": 0.18, "y":0.83}
+        halign: "left"
+        disabled: root.connection_status
+        font_name: "roboto"
+    
+    AnchorLayout:
+
+        anchor_x: "left"
+        anchor_y: "center"
+
+        BoxLayout:
+
+            orientation: "vertical"
+            size_hint: 0.5,0.2
+
+            BoxLayout:
+
+                orientation: "horizontal"
+                size_hint: 0.4,0.1
+                background_color: (1,1,1,1)
+
+                Label:
+
+                    id: status_label
+                    text: "Payload Status:"#root.status
+                    size_hint: 0.1, None
+                    pos_hint: {"center_x": 0.6, "center_y":0.5}
+                    halign: "left"
+                    disabled: root.connection_status
+                    font_name: "roboto"
+
+                MDSpinner:
+                    size_hint: None, 0.1
+                    size: dp(10), dp(10)
+                    pos_hint: {'center_x': .5, 'center_y': .5}
+                    active: root.status_icon
+
+            BoxLayout:
+
+                orientation: "horizontal"
+                size_hint: 0.4,0.1
+                background_color: (1,1,1,1)
+
+                Label:
+
+                    id: initial_setup_label
+                    text: "Initial Setup Status:"
+                    size_hint: 0.1, None
+                    pos_hint: {"center_x": 0.6, "center_y":0.5}
+                    halign: "left"
+                    disabled: root.connection_status
+                    font_name: "roboto"
+
+                MDSpinner:
+                    size_hint: None, 0.1
+                    size: dp(10), dp(10)
+                    pos_hint: {'center_x': .3, 'center_y': .5}
+                    active: root.status_icon
+
+
+    Label:
+
+        id: team_info_label
+        text:"University of Florida\nSpace Systems Design Club\nTeam Name - Team ID"
+        size_hint: 0.4, 0.1
+        pos_hint: {"center_x": 0.8, "center_y":0.89}
+        halign: "center"
+        font_name: "college"
+        font_size: 50
+        
+    BoxLayout:
+
+        orientation: "vertical"
+
+        BoxLayout: 
+            orientation: "vertical"
+            size_hint: 1,1
+
+        BoxLayout:
+            orientation: "vertical"
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: 1,0.5
+                padding: 50
+                spacing: 20
+                
+
+                Label: 
+                    background_color: (0,0,0,0)
+                    background_normal: ''
+                    canvas.before:
+                        Color:
+                            rgba: (55/255, 255/255, 55/255,1) if root.connection_status is False else (255/255, 127/255, 127/255,1)
+                        RoundedRectangle:
+                            size: self.size
+                            pos: self.pos
+                            radius: [58]
+                    text: "Connection Status"
+                    size_hint: 0.3,0.2
+                    color: (0,0,0,1)
+                    font_name: "roboto"
+            
+                Spinner: 
+                    id: port_id
+                    text: "Choose from available serial ports"
+                    size_hint: 1,0.2
+                    values: root.ports
+
+                    on_text: root.AttemptConnection(port_id.text) 
+        # BoxLayout:
+        #     orientation: "horizontal"
+        #     size_hint: 0.5,0.5
+        #     padding: 50
+        #     spacing: 20
+
+        #     Button:
+        #         text: "Start Connection"
+        #         padding: 50
+        #         spacing: 20
+            
+        #     Button:
+        #         text: "Start Connection"
+        #         size_hint_y: 0.1
+        #         padding: 50
+        #         spacing: 20
+
+<RoundedButton@Button> 
+    background_color: (0,0,0,0)
+    background_normal: ''
+    canvas.before:
+        Rectangle:
+            size: self.size
+            pos: self.pos
+            source: '../_static/start.png'
+
+# ! ===========================================================
+<GCS_Page>:
+    name: "GCS"
+    id: "GCS"
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: '../_static/bg4.jpeg'
+    # MDBoxLayout:
+
+    # MDNavigationRail:
+
+    #     theme_style: "Dark"
+    #     primary_pallete: "Orange"
+
+    #     MDNavigationRailItem:
+    #         text: "Start"
+    #         icon: "rocket-launch"
+
+    #     MDNavigationRailItem:
+    #         text: "Stop"
+    #         icon: "rocket"
+
+    #     MDNavigationRailItem:
+    #         text: "Calibrate"
+    #         icon: "cached"
+        
+    #     MDNavigationRailItem:
+    #         text: "Sim"
+    #         icon: "airplane"
+
+    #     MDNavigationRailItem:
+    #         text: "Export"
+    #         icon: "export"
+        
+    # MDBoxLayout:
+    #     id: main
+
+    MDScreen:
+    # BoxLayout:
+    #     size_hint: 1, 1
+    #     orientation: 'horizontal'
+    
+    #     BoxLayout:
+    #         size_hint: 1, 1
+    #         orientation: 'vertical'
+            
+    #         ScrollView:
+    #             id: view_altitude
+    #             do_scroll_x: True
+    #             do_scroll_y: False
+    #             orientation: 'vertical'
+    #             size_hint: 1, 0.5
+    #             scroll_type: ['content']
+    #             bar_width: 4
+    #             bar_color: 1,1,1,1
+    #             bar_inactive: 1,1,1,0.5
+
+    #             BoxLayout:
+
+    #                 orientation: 'vertical'
+    #                 size_hint: None, 1
+    #                 width: view_altitude.width * root.zoom
+
+    #                 BoxLayout:
+    #                     id: altitude_graph
+    #                     size_hint: 1, 0.5
+    #                     orientation: 'vertical'
+
+    #         BoxLayout:
+    #             id: zoom
+    #             size_hint: 1, 0.1
+    #             orientation: 'horizontal'
+                
+
+    #             Button:
+    #                 text: '-'
+    #                 size_hint_x: None
+    #                 width: self.height
+    #                 on_release: root.update_zoom('-')
+
+
+    #             Label:
+    #                 text: str(root.zoom) + 'x'
+                
+    #             Button: 
+    #                 text: '+'
+    #                 size_hint_x: None
+    #                 width: self.height
+    #                 on_release: root.update_zoom('+')
+    #     BoxLayout:
+    #         size_hint: 1, 1
+    #         orientation: 'vertical'
+            
+    #         ScrollView:
+    #             id: view_voltage
+    #             do_scroll_x: True
+    #             do_scroll_y: False
+    #             orientation: 'vertical'
+    #             size_hint: 1, 0.5
+    #             scroll_type: ['content']
+    #             bar_width: 4
+    #             bar_color: 1,1,1,1
+    #             bar_inactive: 1,1,1,0.5
+
+    #             BoxLayout:
+
+    #                 orientation: 'vertical'
+    #                 size_hint: None, 1
+    #                 width: view_voltage.width * root.zoom
+
+    #                 BoxLayout:
+    #                     id: voltage_graph
+    #                     size_hint: 1, 0.5
+    #                     orientation: 'vertical'
+
+    #         BoxLayout:
+    #             id: zoom
+    #             size_hint: 1, 0.1
+    #             orientation: 'horizontal'
+                
+
+    #             Button:
+    #                 text: '-'
+    #                 size_hint_x: None
+    #                 width: self.height
+    #                 on_release: root.update_zoom('-')
+
+
+    #             Label:
+    #                 text: str(root.zoom) + 'x'
+                
+    #             Button: 
+    #                 text: '+'
+    #                 size_hint_x: None
+    #                 width: self.height
+    #                 on_release: root.update_zoom('+')
+
+
