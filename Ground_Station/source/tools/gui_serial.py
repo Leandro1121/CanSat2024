@@ -29,7 +29,8 @@ def find_serial_port():
 
 class SerialObject():
     # The class SerialObject is being defined.
-
+    data_container = []
+    new_data_to_graph = False
 
     def __init__(
             self, 
@@ -43,7 +44,7 @@ class SerialObject():
             max_data_points = 500,
             **kwargs
         ):
-        super().__init__(**kwargs)
+        super(SerialObject, self).__init__(**kwargs)
         # ! This is the initialization function for a class that sets up a serial connection and creates a
         # ! container for collected data while recording it to a csv.
         
@@ -77,9 +78,10 @@ class SerialObject():
         # * :return: The function may return None or may not return anything, depending on the execution path.
         
         
-
+        
         self.team_member = team_member_id                      # A recording will be made of everyone who uses 
                                                                # this program. 
+        self.args = json_args
         if port:                                               # Initialize the Serial port that will be used
             self.is_on, self.first_start = False, False
             self.serial_connection = False
@@ -98,31 +100,26 @@ class SerialObject():
             except Exception as e:
                 print(e)
                 return
-            # The above code is initializing two empty dictionaries `self.serial_flight_vals_container`
-            # and `self.serial_data_container`. It is also assigning the value of `json_args` to
-            # `self.args`.
-            self.serial_flight_vals_container, self.serial_data_container = {},{}           
-            self.args = json_args
-
-            # It then iterates through the list of
-            # collectable data items in `json_args` and creates a queue for each item in
-            # `self.serial_data_container`. 
-            for item in json_args["collectable_data"]:
-                self.serial_data_container[item] = queue.Queue()
-           
-            
+            finally:
+                self.collectable_data = {}
+                self.gps_single_container = []
+                for item in self.args['collectable_data']:
+                    self.collectable_data[item] = []
+                
            # This code block is setting the file path for saving flight recordings. If `comp` is
            # `False`, the file path will include the team member ID and the current date, and if
            # `comp` is `True`, it will be named according to the specification of the competitionn
             if not os.path.isdir(r'Ground_Station/_flight_recordings'):
                 os.mkdir(r'Ground_Station/_flight_recordings')
             if comp is False:
-                self.file_path = f'Ground_Station/_flight_recordings/flight-record_{team_member_id}_{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}_.csv'
+                self.file_path = f'Ground_Station/_flight_recordings/flight-record_{team_member_id}_.csv'
             else:
                 self.file_path = r'Ground_Station/_flight_recordings/' # TODO Add correct name based on competition
         else: 
             print("Include a serial port")
             return
+        
+        
         
 
     def ReadSerialData(self):
@@ -146,13 +143,14 @@ class SerialObject():
                         if self.serialPort.in_waiting > 0:
                             data = self.serialPort.readline().decode('utf-8').rstrip()
                             self.HandleIncomingData(data)
+                            self.new_data_to_graph = True
                     except Exception as e:
                         self.is_on = False
                         print(f'Serial device disconnected or lost communication Error: (0002) \n {e}')
         except Exception as n:
             print(n)
 
-    def WriteSerialData(self,command, data_to_write, alt = False):
+    def WriteSerialData(self,command = "", data_to_write = "", alt = True, full_command = None):
         """
         This function writes serial data to a port, with the option to include a command and team ID.
         
@@ -163,22 +161,27 @@ class SerialObject():
 
         * :param alt: A boolean parameter that specifies whether to use an alternative format for writing
         * serial data. If set to True, the function will use the format
-        * 'CMD,{teamId},{command},{data_to_write}' to write the data to the serial port. If set to False,
-        * it will use the format '{command, defaults to False (optional)
+        * 'CMD,{teamId},{command},{data_to_write}' to write the data to the serial port. 
+        * If set to False, it will use the format '{command, defaults to False (optional)
         """
+        if full_command:
+            self.serialPort.write(full_command.encode('utf-8'))
         if alt:
-            self.serialPort.write(f'CMD,{self.args["teamID"]},{command},{data_to_write}')
+            self.serialPort.write(f'CMD,{self.args["team_ID"]},{command},{data_to_write}'.encode('utf-8'))
         else:
-            self.serialPort.write(f'{command},{data_to_write}')
+            self.serialPort.write(f'{command},{data_to_write}'.encode('utf-8'))
 
     def InitMicroController(self):
         # TODO Function for emergency reinitialization. 
 
         pass
+    
+    def get_serial_data(self):
+        return self.data_container
 
     def HandleIncomingData(self, data = None):
         """
-        This function handles incoming data by splitting it, putting it into a dictionary, writing it to
+        This function handles incoming data by splitting it, putting it into a list, writing it to
         a CSV file, and flushing the file.
         
         * :param data: The data parameter is an optional input to the HandleIncomingData method. It is
@@ -186,58 +189,30 @@ class SerialObject():
         * dictionary and a CSV file. If data is not provided or is an empty string, the method will not
         * execute any further
         """
-        if data and data != "":
+        if data.startswith("1071"):
 
-            split_data = data.split(", ")
-            
-            if len(split_data) == 0: return 
+            self.data_container = data.split(",")
 
-            dict_temp = self.args["collectable_data"]
-            dict_temp_flight_vals = self.args["flight_vals"]
-
-            # This code block is iterating through the list of collectable data items in `dict_temp`
-            # and checking if the size of the queue for each item in `self.serial_data_container` is
-            # greater than 500. If the size of the queue is greater than 'self.max_data', it removes the oldest
-            # item from the queue using the `get()` method. It then adds the new data item to the
-            # queue using the `put()` method, with the index of the item in `split_data` obtained from
-            # `dict_temp`. This ensures that the queue does not grow too large and that the most
-            # recent data is always available for processing.
-            # ! This code will be used for data that will be graphed
-
-            try: 
-                for item in dict_temp:
-                    # Todo make GPS Lat and lon into touple
-                    if self.serial_data_container[item].qsize() > self.max_data: 
-                        self.serial_data_container[item].get()
-                    self.serial_data_container[item].put(split_data[dict_temp[item]])
+            for key, value in self.args['collectable_data'].items():
                 
-            # The below code is iterating through the keys of a dictionary called
-            # `dict_temp_flight_vals`. For each key, it is using the corresponding value as an index
-            # to split a string called `split_data`. The resulting split value is then assigned to a
-            # new dictionary called `serial_flight_vals_container` with the same key as the original
-            # dictionary. Essentially, this code is mapping values from one dictionary to another
-            # based on the index of a split string.
-            # ! This code will be used for code that will be displayed
-
-                for item in dict_temp_flight_vals:
-                    self.serial_flight_vals_container[item] = split_data[dict_temp_flight_vals[item]]
-            except IndexError:
-                print("String not correctly mapped")
-                return
-            except Exception as e: 
-                print(e)  
-                return
+                self.collectable_data[key].append(float(self.data_container[value]))  
             
-            csv.writer(self.file).writerow(split_data)       # Make sure data is not lost in case of failure
+            temp = self.args['GPS']
+            self.gps_single_container.append((float(self.data_container[temp["lat"]]),
+                                              float(self.data_container[temp["lon"]])))
+           
+            csv.writer(self.file).writerow(self.data_container)       # Make sure data is not lost in case of failure
             self.file.flush()
             os.fsync(self.file.fileno())
+        else:
+            pass
 
     def StartSerialObject(self):
         """
         This function starts a serial object and reads data from it in a separate thread if the serial
         port is open.
         """
-        if True: #not self.is_on: 
+        if not self.is_on: 
             # The above code is checking if a serial port is open. If it is open, it sets a flag
             # `is_on` to True and starts a new thread to read data from the serial port using the
             # `ReadSerialData` method. If the serial port is not open, it sets the `is_on` flag to
