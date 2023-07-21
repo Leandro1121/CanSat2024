@@ -14,4 +14,4 @@
 
 **Trouble Shooting Problems I've encountered:**
 from kivy.garden.matplotlib.etc is not found, run
-    garden install matplotlib --kivy
+    - garden install matplotlib --kivy
