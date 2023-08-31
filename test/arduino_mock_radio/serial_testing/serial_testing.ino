@@ -5,12 +5,12 @@ int PACKET_COUNT = 0;
 char MODE = 'F';
 String STATE = "LAUNCH_WAIT";
 double ALTITUDE = 0;
+double AIR_SPEED = 10;
 char HS_DEPLOYED = 'M';
 char PC_DEPLOYED = 'D';
-char MAST_RAISED = 'M';
 double TEMPERATURE = 25.0;
-double VOLTAGE = 5.5;
 double PRESSURE = 100;
+double VOLTAGE = 5.5;
 String GPS_TIME = "12:12:12.56";
 double GPS_ALTITUDE = 160;
 double GPS_LATITUDE = 29.6446;
@@ -18,6 +18,8 @@ double GPS_LONGITUDE = -82.3535;
 int GPS_SATS = 14;
 double TILT_X = 50;
 double TILT_Y = 50;
+double ROT_Z = 50;
+String CMD_ECHO = "CXON";
 bool cont = false;
 void setup() {
   // put your setup code here, to run once:
@@ -32,15 +34,15 @@ void loop() {
 if (Serial.available() > 0){
   String comm = Serial.readString();
   
-  if (comm == "CMD,1071,CX,ON\n"){
+  if (comm == "CMD,1071,CX,ON"){
     cont = true; 
   }
-  else if (comm == "CMD,1071,CX,OFF\n"){
+  else if (comm == "CMD,1071,CX,OFF"){
     cont = false;
   }
 }
 
-// if (cont == false) return;
+//if (cont == false) return;
 
 if (PACKET_COUNT > 600){
   PACKET_COUNT = 1;
@@ -56,6 +58,7 @@ else if (PACKET_COUNT > 300){
   TILT_X -= 0.1;
   TILT_Y -= 0.1;
   VOLTAGE -= 0.001;
+  ROT_Z -= 0.01;
 }
 else{
   PACKET_COUNT ++;
@@ -67,6 +70,7 @@ else{
   TILT_X += 0.1;
   TILT_Y += 0.1;
   VOLTAGE += 0.001;
+  ROT_Z += 0.01;
 }
 
 
@@ -84,15 +88,17 @@ command_to_send += STATE;
 command_to_send += ",";
 command_to_send += ALTITUDE;
 command_to_send += ",";
+command_to_send += AIR_SPEED;
+command_to_send += ",";
 command_to_send += HS_DEPLOYED;
 command_to_send += ",";
 command_to_send += PC_DEPLOYED;
 command_to_send += ",";
 command_to_send += TEMPERATURE;
 command_to_send += ",";
-command_to_send += VOLTAGE;
-command_to_send += ",";
 command_to_send += PRESSURE;
+command_to_send += ",";
+command_to_send += VOLTAGE;
 command_to_send += ",";
 command_to_send += GPS_TIME;
 command_to_send += ",";
@@ -107,6 +113,10 @@ command_to_send += ",";
 command_to_send += TILT_X;
 command_to_send += ",";
 command_to_send += TILT_Y;
+command_to_send += ",";
+command_to_send += ROT_Z;
+command_to_send += ",";
+command_to_send += CMD_ECHO;
 Serial.println(command_to_send);
 delay(1000);
 

@@ -1,6 +1,6 @@
 WindowManager:
     id: window_manager
-
+ 
     HomePage:
     GCSPage:
     AnalysisPage:
@@ -18,34 +18,46 @@ WindowManager:
 
     MDBoxLayout:
 
-    MDNavigationRail:
+        MDNavigationRail:
 
-        anchor: "center"
-        type: "labeled"
-        current_selected_item: 0
-        #icon_color_item_normal:
-        #selected_color_background:
-        #ripple_color_item:
+            anchor: "center"
+            type: "labeled"
+            current_selected_item: 0
 
-        MDNavigationRailItem:
-            id: home_icon
-            text: "Home"
-            icon: "home"
-            on_release:root.manager.current = "homepage"
+            MDNavigationRailItem:
+                id: home_icon
+                text: "Home"
+                icon: "home"
+                on_release:root.manager.current = "homepage"
 
-        MDNavigationRailItem:
-            id: home_icon
-            text: "GCS"
-            icon: "remote-desktop"
-            on_release:root.manager.current = "gcs"
-            #font_name:
-            #on_item_release
+            MDNavigationRailItem:
+                id: home_icon
+                text: "GCS"
+                icon: "remote-desktop"
+                on_release:root.manager.current = "gcs"
 
-        MDNavigationRailItem:
-            text: "ANYSIS"
-            icon: "google-analytics"
-            on_release: root.manager.current = "analysis"
-    # TODO Homepage work here
+            MDNavigationRailItem:
+                text: "ANYSIS"
+                icon: "google-analytics"
+                on_release: root.manager.current = "analysis"
+        
+        MDBoxLayout:
+            orientation: "vertical"
+            MDBoxLayout:
+                orientation: "vertical"
+                Label:
+                    text: "Gator Team"
+                    font_name: "graph"
+                    font_size: 50
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    Label:
+                        text:"Mission Desc"
+            # TODO Homepage work here
+                
+                   
+        
+
     MDScreen:
 
 <GCSPage>:
@@ -63,10 +75,6 @@ WindowManager:
 
             anchor: "center"
             type: "labeled"
-            
-            #icon_color_item_normal:
-            #selected_color_background: 
-            #ripple_color_item:
 
             MDNavigationRailItem:
                 id: home_icon
@@ -75,8 +83,6 @@ WindowManager:
                 on_release:
                     root.manager.current = "homepage"
                     root.on_exit()
-                #font_name:
-                #on_item_release
 
             MDNavigationRailItem:
                 id: analysis_tool
@@ -85,19 +91,12 @@ WindowManager:
                 on_release:
                     root.on_exit() 
                     root.manager.current = "analysis"
-                
-                    
+                         
             MDNavigationRailItem:
                 text: "Setup"
                 icon: "cog"
                 on_release: root.setup_dialog_func()
-
-            MDNavigationRailItem:
-                text: "CAL"
-                icon: "cached"
-                on_release: root.cal_dialog_func()
-                disabled: root.disable_tools
-
+            
             MDNavigationRailItem:
                 text: "Launch"
                 icon: "rocket-launch"
@@ -109,12 +108,30 @@ WindowManager:
                 icon: "send"
                 on_release: root.optional_cmd_dialog_func()
                 disabled: root.disable_tools
+
+            MDNavigationRailItem:
+                text: "CAL"
+                icon: "cached"
+                on_release: root.cal_dialog_func()
+                disabled: root.disable_tools or root.cal_tool
             
             MDNavigationRailItem:
                 text: "SIM"
                 icon: "airplane"
                 on_release: root.sim_dialog_func()
-                disabled: root.disable_tools
+                disabled: root.disable_tools or root.sim_tool
+
+            MDNavigationRailItem:
+                text: "Audio"
+                icon: "volume-high"
+                on_release: root.audio()
+                disabled: root.disable_tools or root.audio_tool
+
+            MDNavigationRailItem:
+                text: "Reset"
+                icon: "restart"
+                on_release: root.reset()
+                disabled: root.disable_tools or root.reset_tool
 
         MDBoxLayout:
 
@@ -122,21 +139,21 @@ WindowManager:
 
             MDGridLayout:
 
-                cols: 5
+                cols: 6
                 rows: 2
                 spacing: 0
                 size_hint: 1, 0.1
                 md_bg_color: 0, 0, 0, 0.7
 
                 Label: 
-                    id: mission_time_start
-                    text: "Mission Time Start:"
+                    id: mission_time_curr
+                    text: "Mission Time:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
-                   
+
                 Label: 
-                    id: mission_time_curr
-                    text: "Mission Time Current:"
+                    id: mission_time_start
+                    text: "Mission Time Start:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
                     
@@ -149,42 +166,55 @@ WindowManager:
 
                 Label: 
                     id: flight_mode
-                    text: "Flight Mode: {}".format("F")
+                    text: "Flight Mode:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
                     font_size: "14dp"
 
                 Label: 
-                    id:flight_state
-                    text: "Flight State: {}".format("NA")
+                    id: flight_state
+                    text: "Flight State:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
                     font_size: "14dp"
+
+                Label: 
+                    id: sim_mode
+                    text: "SIM Mode:"
+                    font_name: "graph"
+                    text_color: "#FAF9F6"
+                    font_size: "14dp"
+                
+                Label: 
+                    id: gps_time
+                    text: "GPS Mission Time:"
+                    font_name: "graph"
+                    text_color: "#FAF9F6"
 
                 Label: 
                     id: gps_sats
-                    text: "GPS Sats: {}".format("NA")
+                    text: "GPS SATS:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
                     font_size: "14dp"
 
                 Label: 
+                    id: pc_release
+                    text: "PC Release:"
+                    font_name: "graph"
+                    text_color: "#FAF9F6"
+                    font_size: "14dp"
                 
-                    text: "Objective1: {}".format("NA")
+                Label: 
+                    id: hs_release
+                    text: "HS Release:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
                     font_size: "14dp"
 
                 Label: 
-                
-                    text: "Objective2: {}".format("NA")
-                    font_name: "graph"
-                    text_color: "#FAF9F6"
-                    font_size: "14dp"
-                
-                Label: 
-                
-                    text: "Objective3: {}".format("NA")
+                    id: cmd_echo
+                    text: "CMD_ECHO:"
                     font_name: "graph"
                     text_color: "#FAF9F6"
                     font_size: "14dp"
@@ -203,6 +233,7 @@ WindowManager:
                 type: "indeterminate"
                 value: 50
                 size_hint: 1, 0.01
+                # TODO: Connect progess bar to something
             
             MDBoxLayout:
 
@@ -231,8 +262,7 @@ WindowManager:
                                 double_tap_zoom: True
                                 pause_on_action: True
                                 size_hint: 1,1
-                                on_touch_up: root.on_touch_up
-                                
+                                on_touch_up: root.on_touch_up 
 
                             MDBoxLayout:
                                 orientation: "horizontal"
@@ -245,30 +275,6 @@ WindowManager:
                                     id: current_loc
                                     text: "Payload Location: "
                                     font_name: "graph"
-                                    
-                                
-                            # Graph:
-
-                            #     id: gps
-                            #     xlabel: root.gps_long
-                            #     ylabel: root.gps_lat
-                            #     xmin:0
-                            #     xmax: 1
-                            #     ymin: 0
-                            #     ymax: 1
-                            #     border_color: 0, 0, 0, 1
-                            #     tick_color: 0,0,0,1
-                            #     x_grid: True
-                            #     y_grid: True
-                            #     draw_border: True
-                            #     x_grid_label: True
-                            #     y_grid_label: True
-                            #     x_ticks_major: 1
-                            #     y_ticks_major: 1
-                            #     x_ticks_minor: 5
-                            #     y_ticks_minor: 5
-                            #     background_color: 0,0,0,0.2
-                                
                        
                         MDBoxLayout:
                             orientation: "vertical"
@@ -283,7 +289,6 @@ WindowManager:
                             
                                 MDBoxLayout:
                                     id: alt_cont
-                                    #size_hint_x:None
                                 
                                     Graph:
 
@@ -343,7 +348,7 @@ WindowManager:
                     MDBoxLayout:
                         orientation: "vertical"
                         ScrollView:
-                            id: scroll_gyro
+                            id: scroll_air_speed
                             do_scroll_x: True
                             do_scroll_y: False
                             #size_hint: 1, 0.5
@@ -352,15 +357,15 @@ WindowManager:
                             bar_color: 1,1,1,1
 
                             MDBoxLayout:
-                                id: gyro_cont
+                                id: air_speed_cont
                             
                                 Graph:
-                                    id:gyro
-                                    ylabel: "Direction N"
+                                    id: air_speed
+                                    ylabel: "Air Speed (m/s)"
                                     xmin:0
                                     xmax: root.x_max
-                                    ymin: -180
-                                    ymax: 180
+                                    ymin: 0
+                                    ymax: 400
                                     border_color: 0, 1, 1, 1
                                     tick_color: 0,1,1,0.7
                                     x_grid: True
@@ -369,7 +374,7 @@ WindowManager:
                                     x_grid_label: True
                                     y_grid_label: True
                                     x_ticks_major: root.x_max/4 
-                                    y_ticks_major: 90
+                                    y_ticks_major: 100
                                     x_ticks_minor: 2
                                     y_ticks_minor: 3
                                     background_color: 0,0,0,0.7
@@ -385,11 +390,11 @@ WindowManager:
                                 size_hint: 0.1, 1
                                 icon_size: "24sp"
                                 theme_icon_color: "Custom"
-                                on_release: root.gyro_zoom("+")
+                                on_release: root.air_speed_zoom("+")
                             
                             Label:
-                                id: label_gyro
-                                text: "Time (sec) - ({}x)".format(root.zoom_gyro)
+                                id: label_air_speed
+                                text: "Time (sec) - ({}x)".format(root.zoom_air_speed)
                                 font_name: "graph"
 
                             MDIconButton:
@@ -397,28 +402,154 @@ WindowManager:
                                 size_hint: 0.1, 1
                                 icon_size: "24sp"
                                 theme_icon_color: "Custom"
-                                on_release: root.gyro_zoom("-")
+                                on_release: root.air_speed_zoom("-")
 
+                    
+                    MDGridLayout:
+                        cols: 1
+                        rows: 4
+
+                        MDBoxLayout:
+                        
+                            ScrollView:
+                                id: scroll_voltage
+                                do_scroll_x: True
+                                do_scroll_y: False
+                                #size_hint: 1, 0.5
+                                scroll_type: ['content']
+                                bar_width: 4
+                                bar_color: 1,1,1,1
+
+                                MDBoxLayout:
+                                    id: voltage_cont
+                                
+                                    Graph:
+                                        id: voltage
+                                        ylabel: "Voltage (V)"
+                                        xmin:0
+                                        xmax: root.x_max
+                                        ymin: 3
+                                        ymax: 7
+                                        border_color: 0, 1, 1, 1
+                                        tick_color: 0,1,1,0.7
+                                        x_grid: True
+                                        y_grid: True
+                                        draw_border: True
+                                        x_grid_label: True
+                                        y_grid_label: True
+                                        x_ticks_major: root.x_max/4 
+                                        y_ticks_major: 1
+                                        x_ticks_minor: 2
+                                        y_ticks_minor: 3
+                                        background_color: 0,0,0,0.7
+                                        label_options: {'font_name': "graph"}
+
+                        # MDBoxLayout:
+                        #     orientation: "horizontal"
+                        #     size_hint: 1, 0.05
+                        #     md_bg_color: 0,0,0,0.7
+
+                        #     MDIconButton:
+                        #         icon: "plus-box"
+                        #         size_hint: 0.1, 1
+                        #         icon_size: "24sp"
+                        #         theme_icon_color: "Custom"
+                        #         on_release: root.voltage_zoom("+")
+                            
+                        #     Label:
+                        #         id: label_voltage
+                        #         text: "Time (sec) - ({}x)".format(1)
+                        #         font_name: "graph"
+
+                        #     MDIconButton:
+                        #         icon: "minus-box"
+                        #         size_hint: 0.1, 1
+                        #         icon_size: "24sp"
+                        #         theme_icon_color: "Custom"
+                        #         on_release: root.voltage_zoom("-")
+
+                        MDBoxLayout:
+                            orientation: "vertical"
+
+                            ScrollView:
+                                id: scroll_temp
+
+                                do_scroll_x: True
+                                do_scroll_y: False
+                                scroll_type: ['content']
+                                bar_width: 4
+                                bar_color: 1,1,1,1
+
+                                MDBoxLayout: 
+
+                                    id: temp_cont
+
+                                    Graph:
+                                        id:temp
+                                        ylabel: "Temperature (C)"
+                                        xmin:0
+                                        xmax: root.x_max
+                                        ymin: 0
+                                        ymax: 32
+                                        border_color: 0, 1, 1, 1
+                                        tick_color: 0,1,1,0.7
+                                        x_grid: True
+                                        y_grid: True
+                                        draw_border: True
+                                        x_grid_label: True
+                                        y_grid_label: True
+                                        x_ticks_major: root.x_max/4
+                                        x_ticks_minor: 5
+                                        y_ticks_major: 8
+                                        y_ticks_minor: 4
+                                        background_color: 0,0,0,0.7
+                                        label_options: {'font_name': "graph"}
+                            MDBoxLayout:
+                                orientation: "horizontal"
+                                size_hint: 1, 0.05
+                                md_bg_color: 0,0,0,0.7
+
+                                MDIconButton:
+                                    icon: "plus-box"
+                                    size_hint: 0.1, 1
+                                    icon_size: "24sp"
+                                    theme_icon_color: "Custom"
+                                    on_release: root.temp_zoom("+"), root.voltage_zoom("+")
+                                                
+                                
+                                Label:
+                                    id: label_temp
+                                    text: "Time (sec) - ({}x)".format(root.zoom_temp)
+                                    font_name: "graph"
+
+                                MDIconButton:
+                                    icon: "minus-box"
+                                    size_hint: 0.1, 1
+                                    icon_size: "24sp"
+                                    theme_icon_color: "Custom"   
+                                    on_release: root.temp_zoom("-"), root.voltage_zoom("-")
                     MDBoxLayout:
                         orientation: "vertical"
+
                         ScrollView:
-                            id: scroll_voltage
+                            id: scroll_gyro
                             do_scroll_x: True
                             do_scroll_y: False
-                            #size_hint: 1, 0.5
                             scroll_type: ['content']
                             bar_width: 4
                             bar_color: 1,1,1,1
-
-                            MDBoxLayout: 
-                                id: voltage_cont
+                        
+                            MDBoxLayout:
+                                id: gyro_cont
+                            
                                 Graph:
-                                    id: voltage
-                                    ylabel: "Voltage (V)"
+
+                                    id: gyro
+                                    ylabel: "Degrees N"
                                     xmin:0
                                     xmax: root.x_max
-                                    ymin: 0
-                                    ymax: 7
+                                    ymin: -180
+                                    ymax: 180
                                     border_color: 0, 1, 1, 1
                                     tick_color: 0,1,1,0.7
                                     x_grid: True
@@ -427,11 +558,12 @@ WindowManager:
                                     x_grid_label: True
                                     y_grid_label: True
                                     x_ticks_major: root.x_max/4
-                                    y_ticks_major: 1
+                                    y_ticks_major: 90
                                     x_ticks_minor: 2
                                     y_ticks_minor: 5
                                     background_color: 0,0,0,0.7
                                     label_options: {'font_name': "graph"}
+                                    
 
                         MDBoxLayout:
                             orientation: "horizontal"
@@ -443,10 +575,11 @@ WindowManager:
                                 size_hint: 0.1, 1
                                 icon_size: "24sp"
                                 theme_icon_color: "Custom"
-                                on_release: root.voltage_zoom("+")
+                                icon_color: "#FAF9F6"
+                                on_release: root.gyro_zoom("+")
                             
                             Label:
-                                id: label_voltage
+                                id: label_gyro
                                 text: "Time (sec) - ({}x)".format(1)
                                 font_name: "graph"
 
@@ -455,69 +588,10 @@ WindowManager:
                                 size_hint: 0.1, 1
                                 icon_size: "24sp"
                                 theme_icon_color: "Custom"
-                                on_release: root.voltage_zoom("-")
-
-                    MDBoxLayout:
-                        orientation: "vertical"
-
-                        ScrollView:
-                            id: scroll_temp
-
-                            do_scroll_x: True
-                            do_scroll_y: False
-                            scroll_type: ['content']
-                            bar_width: 4
-                            bar_color: 1,1,1,1
-
-                            MDBoxLayout: 
-
-                                id: temp_cont
-
-                                Graph:
-                                    id:temp
-                                    ylabel: "Temperature (C)"
-                                    xmin:0
-                                    xmax: root.x_max
-                                    ymin: 0
-                                    ymax: 32
-                                    border_color: 0, 1, 1, 1
-                                    tick_color: 0,1,1,0.7
-                                    x_grid: True
-                                    y_grid: True
-                                    draw_border: True
-                                    x_grid_label: True
-                                    y_grid_label: True
-                                    x_ticks_major: root.x_max/4
-                                    x_ticks_minor: 5
-                                    y_ticks_major: 8
-                                    y_ticks_minor: 4
-                                    background_color: 0,0,0,0.7
-                                    label_options: {'font_name': "graph"}
-                        MDBoxLayout:
-                            orientation: "horizontal"
-                            size_hint: 1, 0.05
-                            md_bg_color: 0,0,0,0.7
-
-                            MDIconButton:
-                                icon: "plus-box"
-                                size_hint: 0.1, 1
-                                icon_size: "24sp"
-                                theme_icon_color: "Custom"
-                                on_release: root.temp_zoom("+")
-                            
-                            Label:
-                                id: label_temp
-                                text: "Time (sec) - ({}x)".format(root.zoom_temp)
-                                font_name: "graph"
-
-                            MDIconButton:
-                                icon: "minus-box"
-                                size_hint: 0.1, 1
-                                icon_size: "24sp"
-                                theme_icon_color: "Custom"   
-                                on_release: root.temp_zoom("-")
+                                icon_color: "#FAF9F6"
+                                on_release: root.gyro_zoom("-")
     MDScreen:
-
+# ! Tools
 <ItemConfirm>
 
     on_release: root.set_icon(check)
@@ -535,7 +609,8 @@ WindowManager:
         id: command_field
         hint_text: "CMD,{},<COMMAND>,<ITEM>".format("1071")
 
-
+<CustomDataTable>:
+# ! ------------------------------------------
 
 <AnalysisPage>:
     name: "analysis"
@@ -566,45 +641,20 @@ WindowManager:
             MDNavigationRailItem:
                 text: "Export"
                 icon: "export"
+                on_release: root.file_manager_open()
 
         MDBoxLayout:
-            orientation: "horizontal"  
-
-            MDBoxLayout:
-                orientation:"vertical"
-                Label: 
-                    id: summary_title
-                    text: "Flight Summary"
-                    size_hint: 1, 0.1
-                    font_size: 36
-
-                
-                ScrollView:
-                    id: scroll_summary
-                    do_scroll_x: True
-                    do_scroll_y: True
-                    size_hint: 1, 1
-                    scroll_type: ['content']
-                    bar_width: 4
-                    bar_color: 1,1,1,1
-                        
-                    Label: 
-                        size_hint: None, None     
-                        id: summary_label
-                        markup: True
-                        size: self.texture_size
-
-                # ! All info here
-
-            MDBoxLayout:
-                orientation:"vertical"
-
-
-                AltitudeFigure:
-
-
-
-
+            id: main_layout
+            orientation: "horizontal"
+            spacing: '10dp'
+            
+            AltitudeFigure:
+            MDGridLayout: 
+                rows: 2
+                CustomDataTable:
+                # ! Anything else you can think of 
         
+
     MDScreen:
 
+    

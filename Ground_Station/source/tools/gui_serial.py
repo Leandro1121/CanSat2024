@@ -17,8 +17,6 @@ import serial.tools.list_ports
 from datetime import datetime
 from threading import Thread
 
-
-
 def find_serial_port(): 
     # * Returns a list of comports available in the machine
     list_of_ports = []
@@ -30,11 +28,11 @@ def find_serial_port():
 class SerialObject():
     # The class SerialObject is being defined.
     data_container = []
-    new_data_to_graph = False
+    new_data = False
 
     def __init__(
             self, 
-            port,            
+            port,           
             BAUDERATE = 9600, 
             TIMEOUT = 1, 
             XONXOFF = True,
@@ -76,9 +74,6 @@ class SerialObject():
         # * :param max_data_point: The maximum amount of data points the queueu will use. 
 
         # * :return: The function may return None or may not return anything, depending on the execution path.
-        
-        
-        
         self.team_member = team_member_id                      # A recording will be made of everyone who uses 
                                                                # this program. 
         self.args = json_args
@@ -86,6 +81,7 @@ class SerialObject():
             self.is_on, self.first_start = False, False
             self.serial_connection = False
             self.max_data = max_data_points
+            self.current_data_size = 0
             try: 
                 self.serialPort = serial.Serial(
                                     port = port,
@@ -142,8 +138,7 @@ class SerialObject():
                     try:
                         if self.serialPort.in_waiting > 0:
                             data = self.serialPort.readline().decode('utf-8').rstrip()
-                            self.HandleIncomingData(data)
-                            self.new_data_to_graph = True
+                            self.HandleIncomingData(data)                  
                     except Exception as e:
                         self.is_on = False
                         print(f'Serial device disconnected or lost communication Error: (0002) \n {e}')
@@ -176,6 +171,13 @@ class SerialObject():
 
         pass
     
+    def ResetData(self):
+        self.gps_single_container = []
+        # TODO Find a way to completely erase all of the info in the container.
+        for item in self.args['collectable_data']:
+            self.collectable_data[item].clear()
+        self.current_data_size = 0
+    
     def get_serial_data(self):
         return self.data_container
 
@@ -200,7 +202,10 @@ class SerialObject():
             temp = self.args['GPS']
             self.gps_single_container.append((float(self.data_container[temp["lat"]]),
                                               float(self.data_container[temp["lon"]])))
-           
+            
+            self.new_data = not self.new_data
+            self.current_data_size += 1  
+            
             csv.writer(self.file).writerow(self.data_container)       # Make sure data is not lost in case of failure
             self.file.flush()
             os.fsync(self.file.fileno())
@@ -247,6 +252,7 @@ class SerialObject():
         """
         self.is_on = False
         self.serial_read_thread.join()
+        self.current_data_size = 0
         if hard_stop:
             raise BaseException
         

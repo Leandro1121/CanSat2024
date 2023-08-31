@@ -1,43 +1,66 @@
 {
     "team_ID": 1071,
-    
+    "team_NAME": "NA",
+    "theme_style": "Dark",
+    "primary_palette": "Orange",
+
+    "packet_format": [
+        "team_id",
+        "mission_time",
+        "packet_count",
+        "flight_mode",
+        "flight_state",
+        "altitude",
+        "air_speed",
+        "hs_deployed",
+        "pc_deployed",
+        "temperature",
+        "voltage",
+        "pressure",
+        "GPS_time",
+        "GPS_altitude",
+        "GPS_latitude",
+        "GPS_longitude",
+        "GPS_sats",
+        "tilt_x",
+        "tilt_y",
+        "rot_z",
+        "CMD_ECHO"
+    ],
+
     "collectable_data": {
-        "Altitude":5,
-        "GYRO": 16,
-        "temperature":8,
-        "voltage":9,
-        "GPS_altitude":12
-    },
-    "GPS":{
-        "lat":13,
-        "lon":14
-    },
-    "packet_format": {
-        "team_id": 0,
-        "mission_time": 1,
-        "packet_count": 2,
-        "flight_mode": 3,
-        "flight_state": 4,
         "altitude": 5,
-        "More_vars": 6,
-        "temperature": 8,
-        "voltage": 9,
-        "GPS_time": 11,
-        "GPS_altitude": 12,
-        "GPS_latitude": 13,
-        "GPS_longitude":14,
-        "GPS_sats": 15,
-        "tilt_x": 16,
-        "CMD_ECHO": 14
-    },   
+        "air_speed": 6,
+        "temperature": 9,
+        "pressure": 10,
+        "voltage": 11,
+        "GPS_altitude":13,
+        "tilt_x": 17,
+        "tilt_y": 18,
+        "rot_z": 19
+    },
+
+    "GPS":{
+        "lat":14,
+        "lon":15
+    },  
+
     "flight_vals": {
         "team_id": 0,
         "mission_time": 1,
         "packet_count": 2,
         "flight_mode": 3,
         "flight_state": 4,
-        "More_vars": 6,
-        "GPS_sats": 15,
+        "hs_deployed": 7,
+        "pc_deployed": 8,
+        "GPS_time": 12,
+        "GPS_sats": 16,
         "CMD_ECHO": 10
+    },
+    "flight_states":{
+        "LAUNCH_WAIT": "Launch sequence initiated",
+        "PREFLIGHT":"Preflight checks complete. Waiting for takeoff."
+
+
     }
 }
