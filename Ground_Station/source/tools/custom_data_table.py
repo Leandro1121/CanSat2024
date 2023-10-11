@@ -138,3 +138,15 @@ def parseData(dataFile):
             for key in mainDict:
                 mainDict[key].append(row[i])
                 i += 1
+
+def showData():
+    i = 0
+    row_data.append((i, mainDict["flight_state"][i], mainDict["altitude"][i], mainDict["packet_count"][i]))
+    for i in range(len(mainDict["flight_state"]) - 1):
+
+        if mainDict["flight_state"][i] == mainDict["flight_state"][i + 1]:
+            continue
+        else:
+            row_data.append((i + 1, mainDict["flight_state"][i + 1], mainDict["altitude"][i + 1], mainDict["packet_count"][i + 1]))
+
+
