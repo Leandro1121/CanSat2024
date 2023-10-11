@@ -3,6 +3,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.boxlayout import MDBoxLayout
+import csv
 
 # TODO Customize to fit our needs:
 class CustomDataTable(MDBoxLayout):
@@ -99,3 +100,41 @@ class CustomDataTable(MDBoxLayout):
                 key=lambda l: l[1][-1]
             )
         )
+
+mainDict = {
+        "team_id": [],
+        "mission_time": [],
+        "packet_count": [],
+        "flight_mode": [],
+        "flight_state": [],
+        "altitude": [],
+        "air_speed": [],
+        "hs_deployed": [],
+        "pc_deployed": [],
+        "temperature": [],
+        "voltage": [],
+        "pressure": [],
+        "GPS_time": [],
+        "GPS_altitude": [],
+        "GPS_latitude": [],
+        "GPS_longitude": [],
+        "GPS_sats": [],
+        "tilt_x": [],
+        "tilt_y": [],
+        "rot_z": [],
+        "CMD_ECHO": [],
+}
+#Definition of Parsing Function
+def parseData(dataFile):
+    #Opens CSV File given in argument as a readfile
+    with open(f"{dataFile}", 'r') as csvfile:
+        #initializes the reading of the csvfile
+        csvreader = csv.reader(csvfile)
+        #Iterates through each row of the csv file
+        for row in csvreader:
+            i = 0
+            #Iterates through each key in the Dict
+            #(DICTIONARY MUST EXACTLY COPY DATA IN CSV)
+            for key in mainDict:
+                mainDict[key].append(row[i])
+                i += 1
