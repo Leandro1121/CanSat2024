@@ -9,7 +9,7 @@
 #include "hardware/i2c.h"
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
-#include "bmp280_i2c.h"
+#include "../h_files/bmp280_i2c.h"
 
 #ifdef i2c_default
 void bmp280_init() {
