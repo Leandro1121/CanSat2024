@@ -56,6 +56,7 @@ class CustomDataTable(MDBoxLayout):
             row_data= self.row_data[
                 #The number of elements must match the length
                 #of the `column_data` list.
+                #just make columns mimic the showdata function
                 (
                     "1",
                     ("alert", [255 / 256, 165 / 256, 0, 1], "No Signal"),
