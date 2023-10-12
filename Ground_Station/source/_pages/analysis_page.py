@@ -44,6 +44,7 @@ from kivymd.toast import toast
 from tools.gui_serial import SerialObject
 from tools.gui_serial import find_serial_port
 import os, shutil
+import csv 
 import json
 import numpy as np
 from datetime import datetime
@@ -51,6 +52,9 @@ from tools.custom_data_table import CustomDataTable
 from kivy.core.audio import SoundLoader
 from kivy.graphics import Line,Color
 import webbrowser
+from tools.json_FR import read_json
+
+json_args_ = read_json()
 
 x_data_analysis_container = []
 y_data_analysis_container = []
@@ -60,10 +64,10 @@ ax = plt.axes(111,projection= "3d")
 current_checked_port = "" 
 volts_value = 50 
  
+ 
 class AnalysisPage(MDScreen):
     manager = None
-    
-    file_path = 'Ground_Station\_summary\summary.txt'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.manager_open = False
@@ -71,12 +75,6 @@ class AnalysisPage(MDScreen):
             exit_manager=self.exit_manager, select_path=self.select_path
         )
         
-    def get_file(self):
-        try:
-            with open(self.file_path, 'r') as file:
-                self.ids.summary_label.text = file.read()
-        except FileNotFoundError as e:
-            pass
     # ! For more modification -> https://kivymd.readthedocs.io/en/1.1.1/components/filemanager/
     def file_manager_open(self):
         self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
@@ -98,15 +96,37 @@ class AnalysisPage(MDScreen):
         self.manager_open = False
         self.file_manager.close()
     
+    def store_flight_data(self, file:str ): 
+        # TODO Finish this function -> dict("Item", [])
+        filepath = file
+        flight_data = []
+        with open(filepath, 'r') as csvfile:
+            # creating a csv reader object
+            csvreader = csv.reader(csvfile)
+        
+            # extracting each data row one by one
+            for row in csvreader:
+                flight_data.append(row)
+                
+        return flight_data
+    
+                
+    #TODO Write function to add data containers for Matplotlib graph to: 
+    """x_data_analysis_container = []
+        y_data_analysis_container = []
+        z_data_analysis_container = []"""           
+        
 
         
     def on_enter(self):
-        pass
+        # * This function is for things you want to do when you open up kivy
+        self.flight_data = self.store_flight_data(r"Ground_Station\_flight_recordings\flight-record_admin_.csv")
         #self.get_file()
         #self.ids.summary_label.font_name = 'graph'
         #self.ids.summary_title.font_name = 'graph'
         
     def on_pre_enter(self):
+        # * These functions will run before the page opens up.
         ax.plot3D(x_data_analysis_container,
                 y_data_analysis_container,
                 z_data_analysis_container,
@@ -116,6 +136,7 @@ class AnalysisPage(MDScreen):
 class AltitudeFigure(MDBoxLayout):
     graph = ObjectProperty(None)
     def __init__(self, *args, **kwargs):
+        #TODO All configurations for the matplot graph are done in this class
         super(AltitudeFigure, self).__init__(*args, **kwargs)
         global ax
         global fig
@@ -142,8 +163,8 @@ class AltitudeFigure(MDBoxLayout):
         plt.grid(True, linestyle='--')
         plt.tick_params(labelsize=10, color = 'white')
         plt.rc('font', family='robot')
-        canvas = FigureCanvasKivyAgg(plt.gcf())
-        self.add_widget(canvas)
+        canvas = FigureCanvasKivyAgg(plt.gcf()) # ! Don't remove
+        self.add_widget(canvas) # ! Don't remove
         
         #  if self.bird:
         #     # ! 3D Graph
