@@ -29,6 +29,7 @@ target_link_libraries(container_build hardware_i2c)
 target_link_libraries(container_build hardware_uart)
 target_link_libraries(container_build hardware_spi)
 target_link_libraries(container_build power_status_adc)
+target_link_libraries(container_build pico_multicore)
 
 target_link_libraries(power_status_adc INTERFACE
         hardware_adc
