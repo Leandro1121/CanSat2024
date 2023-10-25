@@ -35,6 +35,25 @@
 #define UART_RX_PIN_GPS 1
 #define UART_ID_GPS uart0
 
+
+
+//I2C related definitions, BNO055 and BMP 280
+
+//Only two GPIO pins for two I2C connections, both slaves (BMP280 and BNO055)
+//SDA and SCL below Used for both, differentiate by using unique addresses defined below
+#define I2C_SDA 4//GPIO pin, undecided and can be changed
+#define I2C_SCL 5//GPIO pin
+
+//defined I2C struture within PICO
+#define I2C_BMP280_ID i2c0 //BMP280 is i2c block 0
+#define I2C_BNO055_ID i2c1 //BNO055 is i2c block 1, defined within pico and the provided I2C structure
+
+#define I2C_BAUD_RATE 9600 //same as uart for now, can be adjusted
+
+//Unique addresses of each component, slave address for communication
+#define I2C_BMP280_ADDR 10
+#define I2C_BNO055_ADDR 20 //arbitrary values, just need to be unique
+
 //General SPI System Configuration
 //#define SPI_BAUDRATE 9600
 
@@ -44,8 +63,6 @@
 // #define SPI_CORE0_MISO 4
 // #define SPI_CORE0_MOSI 3
 // #define SPI_CORE0_SCK 2
-
-
 
 // Trigger Pins Numbers
 #define BCN_PIN 5 // Change later
@@ -171,12 +188,29 @@ void setup_gps_coms(){
 double press_to_alt_bar(double pressure) {
     return ((SEA_LEVEL_STANDARD_TEMPERATURE / GRAVITY_CONSTANT) * log(SEA_LEVEL_STANDARD_PRESSURE / pressure));
 }
+
 void setup_bmp280(){
+    i2c_init(I2C_BMP280_ID,I2C_BAUD_RATE);
 
+    //Set SDA and SCL pins to provided GPIO pins
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+
+    //if true, set given i2c inst to slave mode, with defined unique address
+    i2c_set_slave_mode(I2C_BMP280_ID, true, I2C_BMP280_ADDR);
 }
+
 void setup_bno055(){
+    i2c_init(I2C_BNO055_ID, I2C_BAUD_RATE);
 
+    //Set SDA and SCL pins to provided GPIO pins
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+
+    //if true, set given i2c inst to slave mode, with defined unique address
+    i2c_set_slave_mode(I2C_BNO055_ID, true, I2C_BNO055_ADDR); 
 }
+
 void setup_powersource(){  
 
 }
