@@ -52,9 +52,7 @@ from tools.custom_data_table import CustomDataTable
 from kivy.core.audio import SoundLoader
 from kivy.graphics import Line,Color
 import webbrowser
-from tools.json_FR import read_json
-
-json_args_ = read_json()
+import csv
 
 x_data_analysis_container = []
 y_data_analysis_container = []
@@ -89,6 +87,15 @@ class AnalysisPage(MDScreen):
         '''
         self.exit_manager()
         toast(path)
+
+    def set_graph_values(self):
+        filename = r'Ground_Station\_flight_recordings\flight-record_admin_.csv'
+        with open(filename, 'r') as csvfile:
+            datareader = csv.reader(csvfile)
+            for row in datareader:
+                x_data_analysis_container.append(float(row[14]))
+                y_data_analysis_container.append(float(row[15]))
+                z_data_analysis_container.append(float(row[5]))
 
     def exit_manager(self, *args):
         '''Called when the user reaches the root of the directory tree.'''
@@ -126,7 +133,7 @@ class AnalysisPage(MDScreen):
         #self.ids.summary_title.font_name = 'graph'
         
     def on_pre_enter(self):
-        # * These functions will run before the page opens up.
+        self.set_graph_values()
         ax.plot3D(x_data_analysis_container,
                 y_data_analysis_container,
                 z_data_analysis_container,
@@ -144,7 +151,7 @@ class AltitudeFigure(MDBoxLayout):
         self.orientation = "vertical"
         
         ax.set_title("Flight Summary", color = 'white')
-        ax.set_xlabel("Latitude", color = 'white' )
+        ax.set_xlabel("Latitude", color = 'white')
         ax.set_ylabel("Longitude", color = 'white')
         ax.set_zlabel("Altitude", color = 'white')
         ax.set_xlim3d(0, 1)
