@@ -35,18 +35,6 @@
 #define UART_RX_PIN_GPS 1
 #define UART_ID_GPS uart0
 
-//General SPI System Configuration
-//#define SPI_BAUDRATE 9600
-
-// //Core 0 SPI Configurations
-// #define SPI_CORE0 spi0
-// #define SPI_CORE0_BUS 0
-// #define SPI_CORE0_MISO 4
-// #define SPI_CORE0_MOSI 3
-// #define SPI_CORE0_SCK 2
-
-
-
 // Trigger Pins Numbers
 #define BCN_PIN 5 // Change later
 #define CAM_TRIGGER 6
@@ -60,26 +48,8 @@
 
 // Variables that exist througout 
 volatile bool new_TX = true;
-volatile bool new_RX = false;
 volatile uint32_t mission_time = 0; 
-volatile char command_string[20] = "";
-volatile char gps_info[360] = ""; 
 
-
-//Interrupt function
-void uart_Rx_handler(){
-    //Add function for when there is a usart transmission
-    new_RX = true; 
-    //Collecting all incoming data from uart
-    uint8_t i = 0; 
-    while (uart_is_readable(UART_ID_XBEE)) {
-        // While there is something in the UART system, Add it to array of characters
-        command_string[i] = uart_getc(UART_ID_XBEE);
-        // Increment place holder.
-        i ++; 
-    } 
- 
-}
 // Interrupt to set transmssion at 1Hz
 int64_t  alarm_callback(alarm_id_t id, void *user_data)
 {
@@ -92,7 +62,18 @@ bool repeating_timer_callback(struct repeating_timer *t) {
     mission_time ++; 
     return true;
 }
-
+void xbee_uart_rx(char* command_string){
+    //Collecting all incoming data from uart
+    uint8_t i = 0; 
+    while (uart_is_readable(UART_ID_XBEE)) {
+        // While there is something in the UART system, Add it to array of characters
+        command_string[i] = uart_getc(UART_ID_XBEE);
+        // Increment place holder.
+        i ++; 
+    } 
+    
+ 
+}
 void setup_xbee_coms(){
     // Set up our UART with a basic baud rate.
     uart_init(UART_ID_XBEE, BAUD_RATE);
@@ -111,20 +92,8 @@ void setup_xbee_coms(){
     // Turn off FIFO's - we want to do this character by character
     uart_set_fifo_enabled(UART_ID_XBEE, false);
 
-    // Set up a RX interrupt
-    // We need to set up the handler first
-    // Select correct interrupt for the UART we are using
-    int UART_IRQ = UART_ID_XBEE == uart1 ? UART0_IRQ : UART1_IRQ;
-
-    // And set up and enable the interrupt handlers
-    irq_set_exclusive_handler(UART_IRQ, uart_Rx_handler);
-    irq_set_enabled(UART_IRQ, true);
-
-    // Now enable the UART to send interrupts - RX only
-    uart_set_irq_enables(UART_ID_XBEE, true, false);
-    
 }
-void uart_Rx_handler_gps(){
+void uart_Rx_handler_gps(char *gps_info){
     // Initialize a counter variables
     int j,i = 0;
     // If the uart is ready to read
@@ -140,7 +109,7 @@ void uart_Rx_handler_gps(){
             // We want to keep track of how many lines we have
             if (c == '\n') j++;
             // Once we have two lines, we have a full packet; 
-            if (j == 2) break;
+            if (j == 1) break; // ! This controls how many lines of NMEA info
         }
     }  
 }
@@ -164,13 +133,12 @@ void setup_gps_coms(){
 
     //Send a command so we only receive RMC and CGA NEMA Sentences
     // ! Remember if you want to use another command add "\r\n"
-    uart_puts(UART_ID_GPS, PMTK_SET_NMEA_OUTPUT_RMCGGA); 
+    uart_puts(UART_ID_GPS, PMTK_SET_NMEA_OUTPUT_GGAONLY); 
 }
-
-
 double press_to_alt_bar(double pressure) {
     return ((SEA_LEVEL_STANDARD_TEMPERATURE / GRAVITY_CONSTANT) * log(SEA_LEVEL_STANDARD_PRESSURE / pressure));
 }
+
 void setup_bmp280(){
 
 }
@@ -209,9 +177,25 @@ void setup_powersource(){
 // }
 
 
-void command_parse(uint8_t *command, int16_t *value2) { 
-    // TODO Add TX variable you will be parseing 
-    // TODO Parse function in here Use command_string its volatile
+void command_parse(uint8_t *command, int16_t *value2, char  *commamnd_string) { 
+    // int team_id;
+    // char comm[10];
+
+    // // TODO Add TX variable you will be parseing 
+    // // TODO Parse function in here Use command_string its volatile
+    // sscanf(command_string, "CMD,%d,%s,%d", &team_id, comm, *value2 );
+
+    // if (team_id == TEAM_ID){
+    //     if (strcmp(comm,"SIMP")== 0) *command = 3;
+    //     else if (strcmp(comm,"CX")== 0) *command = 0;
+    //     else if (strcmp(comm,"BCN")== 0) *command = 5;
+    //     else if (strcmp(comm,"ST")== 0) *command = 1;
+    //     else if (strcmp(comm,"CAL")== 0) *command = 4;
+    //     else if (strcmp(comm,"SIM")== 0) *command = 2;
+    //     else *command = 7; //Default Case does nothing
+    // }
+    
+
 }
 
 
@@ -234,21 +218,22 @@ int main (int argc, char **argv)
     setup_gps_coms();
 
 
-    uint8_t command = 8; //TODO Change back to 0 at the end
+    uint8_t command = 0; //TODO Change back to 0 at the end
     int16_t value = 0; 
 
     // ! Functional Variable 
-    bool CX_ON = true; //TODO Change
+    bool CX_ON = false; //TODO Change
     bool BCN_ON = false;
     bool BCN_CHANGE = false; 
     bool SIM_ENABLE = false;
     bool SIM_ACTIVATE = false;
     bool SIMP_FLAG = false;
+
     double curr_press = 0.0; 
     double curr_alt = 0.0;
     double prev_alt = 0.0;
     uint16_t packet_count = 0; 
-    char CMD_ECHO[10] = "CX_ON"; 
+    char CMD_ECHO[10] = ""; 
 
     // ! Packet Variables
     // Flight States to be used in payload
@@ -264,7 +249,6 @@ int main (int argc, char **argv)
 
     // Used to keep track of current states 
     uint8_t current_state = 0; 
-
     // Used to keep track of Flight mode 
     bool current_mode = true;
     // Used to keep track of heat shield deployment
@@ -285,12 +269,14 @@ int main (int argc, char **argv)
         tight_loop_contents();
 
         // Send and receive data through UART (in a real application)
-        if (new_RX){
-            //Reset RX flag
-            new_RX = false;
+        if (uart_is_readable(UART_ID_XBEE)){
+
+            char command_string[20];
+
+            xbee_uart_rx(command_string);
            
             //Call the function and pass addresses of variables to store the values and parse TX
-            command_parse(&command,&value);
+            //command_parse(&command,&value);
 
             //Switch statement for behavior of incoming transmission
             switch(command){
@@ -376,9 +362,7 @@ int main (int argc, char **argv)
             // Regardless of Mode, altitude will be calculated from curr_pressure
             curr_alt = press_to_alt_bar(curr_press);
 
-            // ! Regardless of Time passed, evaluate behavior
-            // TODO Behavior of payload use (curr_alt and prev_alt) to set states etc...
-            
+            // Add current altitude and state num to FIFO core1 for behavior 
 
             // ! If 1 second has passed, or in SIM Mode, create packet
             if ( uart_is_writable(UART_ID_XBEE) & (new_TX || (SIM_ACTIVATE & SIM_ENABLE))){
@@ -389,11 +373,15 @@ int main (int argc, char **argv)
                 char packetTX[100];
                 char buffer[20];
 
-                //Get Data from GPS 
-                uart_Rx_handler_gps();
+                // Container for GPS data
+                char gps_data[120];
 
-                //Parse Data from GPS to get specific measurments
-                // TODO GPS Parse function
+                //Get Data from GPS 
+                uart_Rx_handler_gps(gps_data);
+
+                //Parse GPS String and put it in a container
+                //struct GGAData data;
+                //parseGGAString(gps_info, &data);
 
                 // * Team ID
                     // Convert the integer to a string
@@ -417,16 +405,17 @@ int main (int argc, char **argv)
                         else strcat(packetTX,"S,");
 
                 // * Flight State -> ex. LAUNCH_WAIT
+                    // ! By the time you get here current_state num should be on FIFO back
                     strcat(packetTX,FLIGHT_STATES[current_state]);
                     strcat(packetTX,",");
 
                 // * Altitude in 0.1 meters
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                    //sprintf(buffer, "%.1f", 0.0);    // TODO Change "floatvalue" to function that generates item
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * AIR_SPEED
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                    //sprintf(buffer, "%.1f", 0.0);    // TODO Change "floatvalue" to function that generates item
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
@@ -439,62 +428,66 @@ int main (int argc, char **argv)
                         else strcat(packetTX,"N,");
 
                 // * Temperature using 0.1 degrees Celcius 
-                   // sprintf(buffer, "%d", );    // TODO Change "floatvalue" to function that generates item
+                    sprintf(buffer, "%d", 0);    // TODO Change "floatvalue" to function that generates item
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * Pressure in 0.1 kPa
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                    //sprintf(buffer, "%.1f", 0.0);    // TODO Change "floatvalue" to function that generates item
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * Voltage in 0.1 V
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                    //sprintf(buffer, "%.1f", 0.0);    // TODO Change "floatvalue" to function that generates item
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * GPS Time in UTC with a resolutions of one second
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
-                    strcat(packetTX,buffer);
+                    //strcat(packetTX, data.UTCTime);
                     strcat(packetTX,",");
 
                 // * GPS Altitude in 0.1 m
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                   // sprintf(buffer, "%.1f", data.altitude);
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * GPS Latitude in decimal degrees with 0.0001 degrees North Resolution
-                    //sprintf(buffer, "%.4f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                    //sprintf(buffer, "%.4f", data.latitude);
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * GPS Longitude in decimal degress with 0.0001 degrees West resolution
-                    //sprintf(buffer, "%.4f", floatValue);    // TODO Change "floatvalue" to function that generates item
+                    //sprintf(buffer, "%.4f", data.longitude);
+                    strcat(packetTX,buffer);
+                    strcat(packetTX,",");
+                
+                 // * GPS SATS, the amount of satellites the GPS is using
+                    //sprintf(buffer, "%d", data.satellitesUsed);    
                     strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * Tilt X/Y direction 0.01 degree resolution. 0 = X/Y perpendicular to Z axis -> center of Earth
-                    //sprintf(buffer, "%.2f", floatValue);    // TODO Change "floatvalue" to function that generates item
-                    strcat(packetTX,buffer);
+                    //sprintf(buffer, "%.2f", 0.0);    // TODO Change "floatvalue" to function that generates item
+                    //strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * Rotation rate in degrees/sec with 0.1 deg/sec resolution
-                    //sprintf(buffer, "%.1f", floatValue);    // TODO Change "floatvalue" to function that generates item
-                    strcat(packetTX,buffer);
+                    //sprintf(buffer, "%.1f", 0.0);    // TODO Change "floatvalue" to function that generates item
+                    //strcat(packetTX,buffer);
                     strcat(packetTX,",");
 
                 // * Last Command read
                     strcat(packetTX,CMD_ECHO);
                     strcat(packetTX,"\n"); 
-                    //strcat(packetTX,(char)rx_buffer);  
 
                 //Write packet string into UART => XBEE
+               
                 //uart_puts(UART_ID_XBEE, packetTX);
                 // TODO Remove when done testing 
-                uart_puts(UART_ID_XBEE, gps_info);
+                //uart_puts(UART_ID_XBEE, gps_info);
 
                 //Create a timmer that will trigger an IRQ after 1 second => 1Hz
-                add_alarm_in_ms(1150, alarm_callback, NULL, false);
+                add_alarm_in_ms(1000, alarm_callback, NULL, false);
             }
         
             prev_alt = curr_alt; 

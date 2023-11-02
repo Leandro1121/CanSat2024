@@ -61,7 +61,7 @@
   "$PMTK314,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29" ///< turn on only the
                                                       ///< GPVTG
 #define PMTK_SET_NMEA_OUTPUT_GGAONLY                                           \
-  "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29" ///< turn on just the
+  "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n" ///< turn on just the
                                                       ///< GPGGA
 #define PMTK_SET_NMEA_OUTPUT_GSAONLY                                           \
   "$PMTK314,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29" ///< turn on just the
