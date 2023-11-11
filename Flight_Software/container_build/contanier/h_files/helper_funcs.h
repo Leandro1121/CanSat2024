@@ -28,4 +28,7 @@ void parseGGAString(const char *input, gps *data);
 void formatTimestamp( char *input);
 
 
+
+
+
 #endif
