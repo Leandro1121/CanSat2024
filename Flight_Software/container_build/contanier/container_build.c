@@ -34,13 +34,13 @@
 #define UART_ID_GPS uart0
 
 //defined I2C struture within PICO
-#define I2C_BMP280_ID i2c0 //BMP280 is i2c block 0
+#define I2C_MPL3115A2_ID i2c0 //MPL3115A2 is i2c block 0
 #define I2C_BNO055_ID i2c0 //BNO055 is i2c block 1, defined within pico and the provided I2C structure
 
 #define I2C_BAUD_RATE 100000 //same as uart for now, can be adjusted
 
 //Unique addresses of each component, slave address for communication
-#define I2C_BMP280_ADDR 0x60
+#define I2C_MPL3115A2_ADDR 0x60
 #define I2C_BNO055_ADDR 0x28
 
 // Trigger Pins Numbers
@@ -57,6 +57,10 @@
 // Pin for ADC to measure voltage through a voltage divider to protect
 #define ADC_Voltage 26
 #define current_divider_val 0.6667
+
+// Pinout for SPI system in SD card reader 
+#define SD_CS 5
+#define SD
 
 // Variables that exist througout 
 volatile bool new_TX = true;
@@ -178,15 +182,15 @@ double press_to_alt_bar(double pressure) {
     return ((SEA_LEVEL_STANDARD_TEMPERATURE / GRAVITY_CONSTANT) * log(SEA_LEVEL_STANDARD_PRESSURE / pressure));
 }
 
-// ! BMP280 Functions
-bool setup_bmp280(){
+// ! MPL3115A2 Functions
+bool setup_MPL3115A2(){
     // ! Call BNO055 first to set up I2C functionality
     //Check to see if device is connected properly 
 
     uint8_t reg = 0x0C;
     uint8_t chipID[1];
-    i2c_write_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, &reg, 1, true);
-    i2c_read_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, chipID, 1, false);
+    i2c_write_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, &reg, 1, true);
+    i2c_read_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, chipID, 1, false);
 
     //uart_putc(UART_ID_XBEE, chipID[0]+65);
     //sleep_ms(50000);
@@ -195,23 +199,23 @@ bool setup_bmp280(){
 
     //Enable the Baramoter 
     uint8_t data[2] = {0x26, 0x38};
-    i2c_write_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, data, 2, true);
+    i2c_write_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, data, 2, true);
 
     // Enable Data Flags
     data[0] = 0x13;
     data[1] = 0x07;
-    i2c_write_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, data, 2, true);
+    i2c_write_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, data, 2, true);
     sleep_ms(1);
 
     // Activate
     data[0] = 0x26;
     data[1] = 0x39;
-    i2c_write_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, data, 2, true);
+    i2c_write_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, data, 2, true);
     sleep_ms(1);
     
     return true;
 }
-void bmp280_collect_data(double *data){
+void MPL3115A2_collect_data(double *data){
 
     // Regester where data starts
     uint8_t reg_val = 0x01;
@@ -223,8 +227,8 @@ void bmp280_collect_data(double *data){
     int16_t temp;
     double f_pressure, f_temp; 
   
-    i2c_write_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, &reg_val, 1, true);
-    i2c_read_blocking(I2C_BMP280_ID, I2C_BMP280_ADDR, data_read, 5, false);
+    i2c_write_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, &reg_val, 1, true);
+    i2c_read_blocking(I2C_MPL3115A2_ID, I2C_MPL3115A2_ADDR, data_read, 5, false);
 
     //Fixed floating point numbers
     pressure = ((data_read[0]<< 16)| data_read[1]<<8 | data_read[2]);
@@ -237,7 +241,7 @@ void bmp280_collect_data(double *data){
     data[1] = f_temp/256;
 
 }
-void bmp280_calibrate(){
+void MPL3115A2_calibrate(){
     // Use this function to calibrate for air pressure
     // TODO 
 }
@@ -350,25 +354,41 @@ double calc_volts(uint16_t adc_value){
     return (adc_value * conversion_factor) / current_divider_val;
 }
 
+// ! SPI System for SD card reader
 
+
+// * -------------------------------------------------------------------------------------*//
 // ! Behavioral Multicore Functions
-// void core1_interrupt_handler(){
-//     while(multicore_fifo_rvalid()){
+volatile double prev_alt = 0; 
 
-//     }
-//    multicore_fifo_clear_irq();
+void core1_interrupt_handler(){
+    double core1_altitude;
+    uint8_t core1_state;  
+    while(multicore_fifo_rvalid()){
+        core1_altitude = multicore_fifo_pop_blocking();
+        core1_state = multicore_fifo_pop_blocking(); 
+        core1_altitude /= 100; 
+        // TODO Behavior Here
+    }
+    prev_alt = core1_altitude;
+    multicore_fifo_push_blocking(core1_state);
 
-// }
-// void core1_entry(){
-//     multicore_fifo_clear_irq();
-//     irq_set_exclusive_handler(SIO_IRQ_PROC1, core1_interrupt_handler);
-//     irq_set_enabled(SIO_IRQ_PROC1, true);
+    multicore_fifo_clear_irq();
 
-//     while(1){
-//         tight_loop_contents();
-//     }
-// }
-
+}
+// Core 1 Main entry Code
+void core1_entry(){
+    multicore_fifo_clear_irq();
+    irq_set_exclusive_handler(SIO_IRQ_PROC1, core1_interrupt_handler);
+    irq_set_enabled(SIO_IRQ_PROC1, true);
+    // ! This function acts like a main function and 
+    // ! all data will be handeled through the interrupt
+    while(1){
+        tight_loop_contents();
+    }
+}
+//*--------------------------------------------------------------------------------------*//
+// ! Core 0 Main Code
 int main (int argc, char **argv)
 {
     stdio_init_all();
@@ -390,11 +410,14 @@ int main (int argc, char **argv)
     //Setup BNO055
     bool bno055_setup = setup_bno055();
 
-     //Setup BMP280
-    bool bmp280_setup = setup_bmp280();
+     //Setup MPL3115A2
+    bool MPL3115A2_setup = setup_MPL3115A2();
 
     // Initialize Current Divider for voltage
     voltage_init();
+
+    //Core 1 Thread Initialize 
+    multicore_launch_core1(core1_entry);
 
     uint8_t command = 0; 
 
@@ -408,7 +431,6 @@ int main (int argc, char **argv)
 
     double curr_press = 0.0; 
     double curr_alt = 0.0;
-    double prev_alt = 0.0;
     uint16_t packet_count = 0; 
     char CMD_ECHO[10] = ""; 
 
@@ -439,16 +461,10 @@ int main (int argc, char **argv)
     struct repeating_timer timer;
     add_repeating_timer_ms(1000, repeating_timer_callback, NULL, &timer);
 
-    //Core 1 Thread Initialize 
-    //multicore_launch_core1(core1_entry);
-
-    
-
-
     while (1) {
         tight_loop_contents();
 
-        double  bmp280_data[2];
+        double  MPL3115A2_data[2];
 
         // Send and receive data through UART (in a real application)
         if (uart_is_readable(UART_ID_XBEE)){
@@ -549,17 +565,17 @@ int main (int argc, char **argv)
             else{
               
                //Collect BMP 280 Data
-                bmp280_collect_data(bmp280_data);
-                curr_press = bmp280_data[0];
+                MPL3115A2_collect_data(MPL3115A2_data);
+                curr_press = MPL3115A2_data[0];
 
             }
             // Regardless of Mode, altitude will be calculated from curr_pressure
-            if (bmp280_setup) curr_alt = press_to_alt_bar(curr_press);
+            if (MPL3115A2_setup) curr_alt = press_to_alt_bar(curr_press);
             else curr_alt = 0.0;
 
-            prev_alt = curr_alt; 
-
             // Add current altitude and state num to FIFO core1 for behavior 
+            multicore_fifo_push_blocking(curr_alt * 100);
+            multicore_fifo_push_blocking(current_state); 
 
             // ! If 1 second has passed, or in SIM Mode, create packet
             if ( uart_is_writable(UART_ID_XBEE) & (new_TX || (SIM_ACTIVATE & SIM_ENABLE))){
@@ -583,6 +599,9 @@ int main (int argc, char **argv)
                 //Vollect Voltage values 
                 uint16_t adc_result = adc_read();
                 double voltage = calc_volts(adc_result);
+
+                // Collect all values back from FIFO
+                if (multicore_fifo_rvalid()) current_state = multicore_fifo_pop_blocking();
 
                 // * Team ID
                     // Convert the integer to a string
@@ -632,7 +651,7 @@ int main (int argc, char **argv)
 
                 // * Temperature using 0.1 degrees Celcius
                     double temp_curr;
-                    if (bmp280_setup) temp_curr = bmp280_data[1];
+                    if (MPL3115A2_setup) temp_curr = MPL3115A2_data[1];
                     else temp_curr = 0.0; 
                     sprintf(buffer, "%.1f", temp_curr);  
                     strcat(packetTX,buffer);
@@ -645,7 +664,7 @@ int main (int argc, char **argv)
 
                 // * Pressure in 0.1 kPa
                     double pres_curr;
-                    if (bmp280_setup) pres_curr = curr_press/1000;
+                    if (MPL3115A2_setup) pres_curr = curr_press/1000;
                     else pres_curr = 0.0; 
                     sprintf(buffer, "%.1f", pres_curr); 
                     strcat(packetTX,buffer);
@@ -721,6 +740,14 @@ int main (int argc, char **argv)
 
                 //Create a timmer that will trigger an IRQ after 1 second => 1Hz
                 add_alarm_in_ms(1000, alarm_callback, NULL, false);
+            }
+            else {
+                // ! If we don' need to send a message, we still need to extract the last data from FIFO 
+                // ! to make sure only the most current data is available
+                while(multicore_fifo_rvalid()){
+                    // * We don't need this data, we only need to remove it. 
+                    multicore_fifo_pop_blocking();
+                }
             }
         }
     }
