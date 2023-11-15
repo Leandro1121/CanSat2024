@@ -168,7 +168,7 @@ class AltitudeFigure(MDBoxLayout):
 
         plt.legend(['Container', 'Payload'])
         plt.grid(True, linestyle='--')
-        plt.tick_params(labelsize=10, color = 'white')
+        plt.tick_params(labelsize=8, color = 'white')
         plt.rc('font', family='robot')
         canvas = FigureCanvasKivyAgg(plt.gcf()) # ! Don't remove
         self.add_widget(canvas) # ! Don't remove
