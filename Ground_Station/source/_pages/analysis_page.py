@@ -120,7 +120,7 @@ class AnalysisPage(MDScreen):
         
     def on_enter(self):
         # * This function is for things you want to do when you open up kivy
-        self.flight_data = self.store_flight_data(r"Ground_Station\_flight_recordings\flight-record_admin_.csv")
+        self.flight_data = self.store_flight_data(r"Ground_Station\_flight_recordings\_flight-record_admin_.csv")
         #self.get_file()
         #self.ids.summary_label.font_name = 'graph'
         #self.ids.summary_title.font_name = 'graph'
@@ -143,10 +143,10 @@ class AltitudeFigure(MDBoxLayout):
     
         self.orientation = "vertical"
         
-        ax.set_title("Flight Summary", color = 'white')
-        ax.set_xlabel("Latitude", color = 'white' )
-        ax.set_ylabel("Longitude", color = 'white')
-        ax.set_zlabel("Altitude", color = 'white')
+        ax.set_title("Flight Summary", color = 'red')
+        ax.set_xlabel("Latitude", color = 'orange' )
+        ax.set_ylabel("Longitude", color = 'yellow')
+        ax.set_zlabel("Altitude", color = 'green')
         ax.set_xlim3d(0, 1)
         ax.set_ylim3d(0, 1)
         ax.set_zlim3d(0, 1)
@@ -155,9 +155,9 @@ class AltitudeFigure(MDBoxLayout):
         ax.set_facecolor([0,0,0,0.5])
         
 
-        ax.tick_params(axis='x',colors='white')
-        ax.tick_params(axis='y',colors='white')
-        ax.tick_params(axis='z',colors='white')
+        ax.tick_params(axis='x',colors='orange')
+        ax.tick_params(axis='y',colors='yellow')
+        ax.tick_params(axis='z',colors='green')
 
         plt.legend(['Container', 'Payload'])
         plt.grid(True, linestyle='--')
