@@ -38,13 +38,15 @@ class CustomDataTable(MDBoxLayout):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+
         self.parseData(r"Ground_Station\_flight_recordings\flight-record_admin_.csv")
         self.showData()
         print(self.row_data)
-        
+
         data_tables = MDDataTable(
             size_hint=(0.9, 0.6),
             column_data=[
+
                 ("Column 1", dp(20)),
                 ("Column 2", dp(30)),
                 ("Column 3", dp(50), self.sort_on_col_3),
@@ -68,6 +70,7 @@ class CustomDataTable(MDBoxLayout):
                 )
                 ]
          self.add_widget(data_tables)
+
 
     def sort_on_col_3(self, data):
         return zip(
@@ -101,14 +104,15 @@ class CustomDataTable(MDBoxLayout):
 
     def showData(self):
         i = 0
+
         self.row_data.append((i, self.mainDict["flight_state"][i], self.mainDict["altitude"][i], self.mainDict["packet_count"][i]))
+
         for i in range(len(self.mainDict["flight_state"]) - 1):
 
             if self.mainDict["flight_state"][i] == self.mainDict["flight_state"][i + 1]:
                 continue
             else:
                 self.row_data.append((i + 1, self.mainDict["flight_state"][i + 1], self.mainDict["altitude"][i + 1], self.mainDict["packet_count"][i + 1]))
-
 
 
 
