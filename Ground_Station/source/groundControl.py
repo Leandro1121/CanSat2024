@@ -64,8 +64,8 @@ if __name__ == "__main__":
     # * The sound_gen function creates all the voice overs for the flight states.
     # * If no internet, the function will stop itself. 
     # * States and sounds located in TEAMS_INFO folder json file.
-    # sound_gen(json_args_['flight_states'])
-    
+
+    #sound_gen(json_args_['flight_states'])
     # ! Main function that runs app 
     GroundControlApp().run()
    
