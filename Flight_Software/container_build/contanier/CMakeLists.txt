@@ -1,7 +1,8 @@
 # Add any internal function script here
 set (SOURCES
         container_build.c
-        bmp280_i2c.c)
+        c_files/helper_funcs.c
+        )
 # For .h files        
 include_directories(${CMAKE_SOURCE_DIR})
 
@@ -14,6 +15,16 @@ target_link_libraries(container_build pico_stdlib)
 target_link_libraries(container_build hardware_i2c)
 target_link_libraries(container_build hardware_uart)
 target_link_libraries(container_build hardware_spi)
+target_link_libraries(container_build hardware_adc)
+target_link_libraries(container_build pico_multicore)
+
+if (PICO_CYW43_SUPPORTED)
+    target_link_libraries(container_build
+        pico_cyw43_arch_none
+    )
+endif()
+# Enable extra outputs, such as disassembly
+pico_enable_stdio_uart(container_build 0)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(container_build)
