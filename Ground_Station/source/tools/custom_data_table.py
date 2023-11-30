@@ -3,15 +3,50 @@ from kivy.uix.anchorlayout import AnchorLayout
 
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.boxlayout import MDBoxLayout
+import csv
 
 # TODO Customize to fit our needs:
 class CustomDataTable(MDBoxLayout):
+    
+    row_data = []
+    
+    mainDict = {
+        "team_id": [],
+        "mission_time": [],
+        "packet_count": [],
+        "flight_mode": [],
+        "flight_state": [],
+        "altitude": [],
+        "air_speed": [],
+        "hs_deployed": [],
+        "pc_deployed": [],
+        "temperature": [],
+        "voltage": [],
+        "pressure": [],
+        "GPS_time": [],
+        "GPS_altitude": [],
+        "GPS_latitude": [],
+        "GPS_longitude": [],
+        "GPS_sats": [],
+        "tilt_x": [],
+        "tilt_y": [],
+        "rot_z": [],
+        "CMD_ECHO": [],
+        }
+
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+
+        self.parseData(r"Ground_Station\_flight_recordings\flight-record_admin_.csv")
+        self.showData()
+        print(self.row_data)
+
         data_tables = MDDataTable(
             size_hint=(0.9, 0.6),
             column_data=[
+
                 ("Column 1", dp(20)),
                 ("Column 2", dp(30)),
                 ("Column 3", dp(50), self.sort_on_col_3),
@@ -20,69 +55,22 @@ class CustomDataTable(MDBoxLayout):
                 ("Column 6", dp(30)),
                 ("Column 7", dp(30), self.sort_on_col_2),
             ],
-            row_data=[
-                # The number of elements must match the length
-                # of the `column_data` list.
+            row_data= self.row_data[
+                #The number of elements must match the length
+                #of the `column_data` list.
+                #just make columns mimic the showdata function
                 (
                     "1",
                     ("alert", [255 / 256, 165 / 256, 0, 1], "No Signal"),
                     "Astrid: NE shared managed",
                     "Medium",
                     "Triaged",
-                    "0:33",
+                    "0:33", 
                     "Chase Nguyen",
-                ),
-                (
-                    "2",
-                    ("alert-circle", [1, 0, 0, 1], "Offline"),
-                    "Cosmo: prod shared ares",
-                    "Huge",
-                    "Triaged",
-                    "0:39",
-                    "Brie Furman",
-                ),
-                (
-                    "3",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                    "Phoenix: prod shared lyra-lists",
-                    "Minor",
-                    "Not Triaged",
-                    "3:12",
-                    "Jeremy lake",
-                ),
-                (
-                    "4",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                    "Sirius: NW prod shared locations",
-                    "Negligible",
-                    "Triaged",
-                    "13:18",
-                    "Angelica Howards",
-                ),
-                (
-                    "5",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                    "Sirius: prod independent account",
-                    "Negligible",
-                    "Triaged",
-                    "22:06",
-                    "Diane Okuma",
-                ),
-            ],
-        )
-        self.add_widget(data_tables)
+                )
+                ]
+         self.add_widget(data_tables)
+
 
     def sort_on_col_3(self, data):
         return zip(
@@ -99,3 +87,32 @@ class CustomDataTable(MDBoxLayout):
                 key=lambda l: l[1][-1]
             )
         )
+    #Definition of Parsing Function
+    def parseData(self,dataFile:str):
+        #Opens CSV File given in argument as a readfile
+        with open(f"{dataFile}", 'r') as csvfile:
+            #initializes the reading of the csvfile
+            csvreader = csv.reader(csvfile)
+            #Iterates through each row of the csv file
+            for row in csvreader:
+                i = 0
+                #Iterates through each key in the Dict
+                #(DICTIONARY MUST EXACTLY COPY DATA IN CSV)
+                for key in self.mainDict:
+                    self.mainDict[key].append(row[i])
+                    i += 1
+
+    def showData(self):
+        i = 0
+
+        self.row_data.append((i, self.mainDict["flight_state"][i], self.mainDict["altitude"][i], self.mainDict["packet_count"][i]))
+
+        for i in range(len(self.mainDict["flight_state"]) - 1):
+
+            if self.mainDict["flight_state"][i] == self.mainDict["flight_state"][i + 1]:
+                continue
+            else:
+                self.row_data.append((i + 1, self.mainDict["flight_state"][i + 1], self.mainDict["altitude"][i + 1], self.mainDict["packet_count"][i + 1]))
+
+
+
