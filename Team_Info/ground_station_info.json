@@ -59,7 +59,12 @@
     },
     "flight_states":{
         "LAUNCH_WAIT": "Launch sequence initiated",
-        "PREFLIGHT":"Preflight checks complete. Waiting for takeoff."
+        "ASCENT": "Rocket is ascending.",
+        "HS_RELEASE": "Deploying heat shield.",
+        "DECENT": "Altitude has dropped to 100 meters. Prepare for decent.",
+        "P_RELEASE": "Deploying parachute.",
+        "DECENT2": "Final decent.",
+        "LANDED": "Rocket has landed."
 
 
     }
