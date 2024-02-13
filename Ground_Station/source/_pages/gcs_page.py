@@ -311,15 +311,15 @@ class GCSPage(MDScreen):
         self.cal_dialog.open()
     def cal_dialog_helper(self,instance):
         # TODO: Send the command to calibrate device
-         #self.bird.WriteSerialData(command="CX", data_to_write="ON")
+        self.bird.WriteSerialData(command="CAL")
         print("Calibrate")
     def st_time_dialog_helper(self,instance):
         # TODO: Send the command to callibrate mission time based on current mission time
-         #self.bird.WriteSerialData(command="CX", data_to_write="ON")
+        self.bird.WriteSerialData(command="ST", data_to_write= datetime.utcnow().strftime("%H:%M:%S"))
         print("time")
     def st_gps_dialog_helper(self,instance):
         # TODO: Send the command to callibrate the payload based on gps time 
-         #self.bird.WriteSerialData(command="CX", data_to_write="ON")
+        self.bird.WriteSerialData(command="ST", data_to_write="-1")
         print("gps")
         
     # * Launch Dialog - Used to start and end transmission of the Container and Payload
@@ -349,7 +349,7 @@ class GCSPage(MDScreen):
             .format(datetime.utcnow().strftime("%H:%M:%S.%f")[:-4])
         # TODO Comment this out when not testing out
         self.bird.StartSerialObject()
-        #self.bird.WriteSerialData(command="CX", data_to_write="ON")
+        self.bird.WriteSerialData(command="CX", data_to_write="ON")
         if self.sim_mode_enabled and self.sim_mode_active:
             self.SIM_MODE()
         self.ids.analysis_tool.disabled = True
@@ -361,7 +361,7 @@ class GCSPage(MDScreen):
         # ! Function to end recording Data
         self.bird.StopSerialObject()
         # TODO: Make sure this command is untimately correct for payload
-        #self.bird.WriteSerialData(command="CX", data_to_write="OFF")
+        self.bird.WriteSerialData(command="CX", data_to_write="OFF")
         self.audio_tool, self.reset_tool, self.cal_tool, self.sim_tool = False, False, False, False
         
         # * Add a marker to where the Payload landed
@@ -402,19 +402,19 @@ class GCSPage(MDScreen):
         self.bird.WriteSerialData("SIM", "ENABLE")
         self.ids.sim_mode.text = "SIM Mode: [color=ffff00]{}[/color]".format("ENABLED")
         self.sim_mode_enabled = True
-        #self.bird.WriteSerialData(command="CX", data_to_write="OFF")
+        self.bird.WriteSerialData(command="SIM", data_to_write="ENABLE")
         # TODO: Write command that is necessary to send enable message
     def sim_activate_helper(self,instance):
         self.bird.WriteSerialData("SIM", "ACTIVATE")
         self.ids.sim_mode.text = "SIM Mode: [color=00ff00]{}[/color]".format("ACTIVATED")
         self.sim_mode_active = True
-        #self.bird.WriteSerialData(command="CX", data_to_write="OFF")
+        self.bird.WriteSerialData(command="SIM", data_to_write="ACTIVATE")
         # TODO: Write command that is necessary to send activate message
     def sim_disable_helper(self,instance):
         self.bird.WriteSerialData("SIM", "DISABLE")
         self.ids.sim_mode.text = "SIM Mode: [color=ff0000]{}[/color]".format("DISABLED")
         self.sim_mode_active, self.sim_mode_enabled = False,False
-        #self.bird.WriteSerialData(command="CX", data_to_write="OFF")
+        self.bird.WriteSerialData(command="SIM", data_to_write="DISABLE")
         # TODO: Write command that is necessary to send disable message
         self.sim_dialog.dismiss()
         
@@ -576,4 +576,3 @@ class ItemConfirm(OneLineAvatarIconListItem):
         global current_checked_port
         current_checked_port = self.text.split(" - ")[0]
         return super().on_touch_up(touch)
-# ! ============================================================================== 
