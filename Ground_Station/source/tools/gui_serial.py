@@ -16,6 +16,7 @@ import serial.tools.list_ports
 
 from datetime import datetime
 from threading import Thread
+import time
 
 def find_serial_port(): 
     # * Returns a list of comports available in the machine
@@ -36,7 +37,7 @@ class SerialObject():
             BAUDERATE = 9600, 
             TIMEOUT = 1, 
             XONXOFF = True,
-            team_member_id = "admin",
+            team_member_id = "2062",
             comp = False,
             json_args = None,
             max_data_points = 500,
@@ -162,7 +163,7 @@ class SerialObject():
         if full_command:
             self.serialPort.write(full_command.encode('utf-8'))
         if alt:
-            self.serialPort.write(f'CMD,{self.args["team_ID"]},{command},{data_to_write}'.encode('utf-8'))
+            self.serialPort.write(f'CMD,{self.args["team_ID"]},{command},{data_to_write}\n'.encode('utf-8'))
         else:
             self.serialPort.write(f'{command},{data_to_write}'.encode('utf-8'))
 
@@ -273,52 +274,70 @@ class SerialObject():
         return serialPort_info
         
         
+class SimulationObject:
+    command_array = []
+    bird = None
+    internal_thread = None
+    kill_thread = False
+    launch = False
+    def __init__(
+            self, 
+            bird:SerialObject = None,
+            simulation_param = r"Ground_Station\_sim_file\cansat_2023_simp.txt",
+            internal_thread = None,
+            **kwargs
+        ):
+        super(SimulationObject, self).__init__(**kwargs)
+        self.bird = bird
+        
+        # Break Down .txt file and store in command_array for transmission.
+        with open(simulation_param,'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            if line.startswith("CMD"):
+                self.command_array.append(line.replace('$', "2062"))
+                
+    def ActivateSimObj(self):
+       # The above code is creating a new thread and starting it. The thread is created with the
+       # target function `self.SimObj_main` and is set as a daemon thread.
+        try:
+            if self.internal_thread is None:
+                # ! If there is no thread, create a thread to control flow of program.
+                self.internal_thread =  Thread(
+                                                target = self.SimObj_main,
+                                                daemon= True
+                                                )
+                self.internal_thread.start()
+                
+        except Exception as e:
+            print(e)
+            
+    def SimObj_launch(self, status:bool = False):
+        self.launch = status
+     
+    def SimObj_main(self):
+        # Wait for launch command to be issued
+        while(not self.launch): pass
+        
+        for command in self.command_array:
+            # Allows us to stop sim mode at any point and kill the thread when we choose
+            while(not self.launch and not self.kill_thread): pass
+        
+            if not self.kill_thread:
+                if self.bird is not None:
+                    print(command) #TODO Change this to a bird write command
+                    time.sleep(2)  # Instead of time_sleep, ideally we check for new_data       
+            else:
+                break
 
+    def Kill_SimObj(self):
+        self.kill_thread = True
+        self.internal_thread.join() 
+    
+    def __del__(self):
+        print('Sim Object Deleted')
+        
 
-# # Function to handle incoming data
-# def handle_data(data, flight_states,
-#                 states, hc_bool_states, mast_bool_states, pc_bool_states, flight_mode_states):
-#     # Do something with the received data
-#     # @TODO Figure out start
-#     teamID = "1071"
-#     if data.find(teamID, 0, len(teamID)) == -1:
-#         package_count = flight_states["packet_count"]
-#         num_states = 0b000000
-#         num_states |= (flight_states["start_payload"] << 0)
-#         num_states |= (flight_states["hc_bool"] << 1)
-#         num_states |= (flight_states["pc_bool"] << 2)
-#         num_states |= (flight_states["mast_bool"] << 3)
-#         num_states |= (flight_states["flight_mode"] << 4)
-#         num_states |= (flight_states["state"] << 5)
-#         cmd = f"{teamID},5,0,{num_states},{package_count}"
-#         ser.write(cmd.encode('utf-8'))
-#         _VARS['window']['echo'].update('Command Echo: Satellite Ready')
-#     else:
-#         shared_data.put(data)
-#         data_cont = data.split(",")
-#         # Save necessary flight states and info in
-#         # case of defect
-#         try:
-#             flight_states["state"] = states[data_cont[4]]
-#             flight_states["hc_bool"] = hc_bool_states[data_cont[6]]
-#             flight_states["pc_bool"] = pc_bool_states[data_cont[7]]
-#             flight_states["mast_bool"] = mast_bool_states[data_cont[8]]
-#             flight_states["packet_count"] = data_cont[2]
-#             flight_states["flight_mode"] = flight_mode_states[data_cont[3]]
-#             temp_time = data_cont[1].split(':')
-#             flight_states["mission_time"] = int(temp_time[0]) * 3600 + int(temp_time[1]) * 60 + int(temp_time[2])
-
-#         except IndexError:
-#             pass
-
-# def read_serial(flight_states, states, hc_bool_states,
-#                 mast_bool_states, pc_bool_states, flight_mode_states):
-#     while True:
-#         if ser.in_waiting > 0:
-#             data = ser.readline().decode('utf-8').rstrip()
-#             # Call the handle_data function to process the received data
-#             handle_data(data, flight_states, states,
-#                         hc_bool_states, mast_bool_states,
-#                         pc_bool_states, flight_mode_states)
-
-# data = shared_data.get()
+        
+        
+   
