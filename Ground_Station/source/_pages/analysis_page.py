@@ -61,7 +61,7 @@ fig= plt.figure(facecolor=(1, 1, 1, 0.7), figsize=(100,10))
 ax = plt.axes(111,projection= "3d")
 current_checked_port = "" 
 volts_value = 50 
- 
+file_name = None
  
 class AnalysisPage(MDScreen):
     manager = None
@@ -72,7 +72,6 @@ class AnalysisPage(MDScreen):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager, select_path=self.select_path
         )
-        self.file_name = None
         
     # ! For more modification -> https://kivymd.readthedocs.io/en/1.1.1/components/filemanager/
     def file_manager_open(self):
@@ -91,7 +90,7 @@ class AnalysisPage(MDScreen):
         self.set_graph_values(path)
         self.ids.main_layout.clear_widgets()
            
-        #self.ids.table_placeholder.add_widget(CustomDataTable())
+        self.ids.main_layout.add_widget(CustomDataTable())
         self.ids.main_layout.add_widget(AltitudeFigure())
         
 
