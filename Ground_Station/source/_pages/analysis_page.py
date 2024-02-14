@@ -72,10 +72,11 @@ class AnalysisPage(MDScreen):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager, select_path=self.select_path
         )
+        self.file_name = None
         
     # ! For more modification -> https://kivymd.readthedocs.io/en/1.1.1/components/filemanager/
     def file_manager_open(self):
-        self.file_manager.show(os.path.expanduser("~"))  # output manager to the screen
+        self.file_manager.show(r"Ground_Station\_flight_recordings")  # output manager to the screen
         self.manager_open = True
 
     def select_path(self, path: str):
@@ -87,9 +88,15 @@ class AnalysisPage(MDScreen):
         '''
         self.exit_manager()
         toast(path)
+        self.set_graph_values(path)
+        self.ids.main_layout.clear_widgets()
+           
+        #self.ids.table_placeholder.add_widget(CustomDataTable())
+        self.ids.main_layout.add_widget(AltitudeFigure())
+        
 
-    def set_graph_values(self):
-        filename = r'Ground_Station\_flight_recordings\flight-record_admin_.csv'
+    def set_graph_values(self, filename):
+    
         with open(filename, 'r') as csvfile:
             datareader = csv.reader(csvfile)
             for row in datareader:
@@ -102,43 +109,9 @@ class AnalysisPage(MDScreen):
 
         self.manager_open = False
         self.file_manager.close()
-    
-    def store_flight_data(self, file:str ): 
-        # TODO Finish this function -> dict("Item", [])
-        filepath = file
-        flight_data = []
-        with open(filepath, 'r') as csvfile:
-            # creating a csv reader object
-            csvreader = csv.reader(csvfile)
         
-            # extracting each data row one by one
-            for row in csvreader:
-                flight_data.append(row)
-                
-        return flight_data
-    
-                
-    #TODO Write function to add data containers for Matplotlib graph to: 
-    """x_data_analysis_container = []
-        y_data_analysis_container = []
-        z_data_analysis_container = []"""           
+    #def on_enter(self):
         
-
-        
-    def on_enter(self):
-        # * This function is for things you want to do when you open up kivy
-        self.flight_data = self.store_flight_data(r"Ground_Station\_flight_recordings\_flight-record_admin_.csv")
-        #self.get_file()
-        #self.ids.summary_label.font_name = 'graph'
-        #self.ids.summary_title.font_name = 'graph'
-        
-    def on_pre_enter(self):
-        self.set_graph_values()
-        ax.plot3D(x_data_analysis_container,
-                y_data_analysis_container,
-                z_data_analysis_container,
-                color = 'red')
-        #self.ids.table_placeholder.add_widget(CustomDataTable())
          
 class AltitudeFigure(MDBoxLayout):
     graph = ObjectProperty(None)
@@ -150,8 +123,6 @@ class AltitudeFigure(MDBoxLayout):
     
         self.orientation = "vertical"
         
-
-
         ax.set_title("Flight Summary", color = 'red')
         ax.set_xlabel("Latitude", color = 'orange' )
         ax.set_ylabel("Longitude", color = 'yellow')
@@ -169,20 +140,16 @@ class AltitudeFigure(MDBoxLayout):
         ax.tick_params(axis='y',colors='yellow')
         ax.tick_params(axis='z',colors='green')
 
-        plt.legend(['Container', 'Payload'])
+        plt.legend(['Payload'])
         plt.grid(True, linestyle='--')
         plt.tick_params(labelsize=8, color = 'white')
         plt.rc('font', family='robot')
         canvas = FigureCanvasKivyAgg(plt.gcf()) # ! Don't remove
         self.add_widget(canvas) # ! Don't remove
+    
+        ax.plot3D(x_data_analysis_container,
+                y_data_analysis_container,
+                z_data_analysis_container,
+                color = 'red')
         
-        #  if self.bird:
-        #     # ! 3D Graph
-        #     if len(self.bird.gps_single_container) > 0:
-        #         global x_data_analysis_container
-        #         global y_data_analysis_container
-        #         global z_data_analysis_container
-        #         gps_data = self.bird.gps_single_container
-        #         x_data_analysis_container = [lat for (lat,_) in gps_data]
-        #         y_data_analysis_container = [lon for (_,lon) in gps_data]
-        #         z_data_analysis_container = [alt for alt in self.bird.collectable_data['altitude']]
+        plt.savefig(r"Ground_Station\_pfr_material\flight_ansys.png", bbox_inches='tight')

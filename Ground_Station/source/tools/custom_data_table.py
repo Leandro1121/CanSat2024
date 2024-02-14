@@ -69,7 +69,10 @@ class CustomDataTable(MDBoxLayout):
                     "Chase Nguyen",
                 )
                 ]
-         self.add_widget(data_tables)
+        )
+        self.add_widget(data_tables)
+       
+            
 
 
     def sort_on_col_3(self, data):
