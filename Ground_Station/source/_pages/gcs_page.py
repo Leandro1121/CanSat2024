@@ -47,6 +47,8 @@ class GCSPage(MDScreen):
     mission_time_curr = StringProperty(datetime.now())
     sim_mode_active = False
     sim_mode_enabled = False
+    sim_mode_active_gui = True
+    sim_mode_enabled_gui = False
     SimObj = None
     # ! Zoom Values
     zoom_alt = NumericProperty(1)
@@ -388,12 +390,14 @@ class GCSPage(MDScreen):
                     MDRaisedButton(
                         text="ENABLE",
                         theme_text_color="Custom",
-                        on_release= self.sim_enable_helper
+                        on_release= self.sim_enable_helper,
+                        disabled= self.sim_mode_enabled_gui
                     ),
                     MDRaisedButton(
                         text="ACTIVATE",
                         theme_text_color="Custom",
-                        on_release= self.sim_activate_helper
+                        on_release= self.sim_activate_helper,
+                        disabled = self.sim_mode_active_gui
                     ),
                     MDFlatButton(
                         text="DISABLE",
@@ -416,7 +420,8 @@ class GCSPage(MDScreen):
         # self.bird.WriteSerialData("SIM", "ACTIVATE") TODO uncomment
         self.ids.sim_mode.text = "SIM Mode: [color=00ff00]{}[/color]".format("ACTIVATED")
         self.sim_mode_active = True
-        if self.SimObj is not None: self.SimObj.ActivateSimObj()
+        if self.SimObj is not None: self.SimObj.ActivateSimObj();
+        #elif self.SimObj 
     
         self.bird.WriteSerialData(command="SIM", data_to_write="ACTIVATE")
         # TODO: Write command that is necessary to send activate message
