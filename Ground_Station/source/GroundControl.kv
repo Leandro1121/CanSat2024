@@ -636,25 +636,14 @@ WindowManager:
             MDNavigationRailItem:
                 text: "GCS"
                 icon: "remote-desktop"
-                on_release:root.manager.current = "gcs"
-            
+                on_release:root.manager.current = "gcs"          
             MDNavigationRailItem:
-                text: "Export"
-                icon: "export"
+                text: "Import"
+                icon: "import"
                 on_release: root.file_manager_open()
 
         MDBoxLayout:
             id: main_layout
             orientation: "horizontal"
             spacing: '10dp'
-            
-            AltitudeFigure:
-            MDGridLayout: 
-                rows: 2
-                CustomDataTable:
-                # ! Anything else you can think of 
-        
-
     MDScreen:
-
-    
