@@ -3,7 +3,7 @@
 *             The University of Florida               *
 *             Space Systems Design Club               *
 *                     CanSat 2024                     *
-*                Team: 2024 The Swamp                 *
+*                        Team:                        *
 *                     Authored by:                    *
 *    Leandro Sanchez,                                 *
 # ! ***************************************************
@@ -43,6 +43,10 @@ class GroundControlApp(MDApp):
         self.theme_cls.primary_palette = json_args_["primary_palette"]
         LabelBase.register(name='graph',
                    fn_regular='Ground_Station\_resources\VCR_OSD_MONO_1.001.ttf')
+        LabelBase.register(name='Anta',
+                   fn_regular='Ground_Station\_resources\Anta-Regular.ttf')
+        LabelBase.register(name='KodeMono',
+                   fn_regular='Ground_Station\_resources\KodeMono-VariableFont_wght.ttf')
 
 class WindowManager(MDScreenManager):
     pass
@@ -64,8 +68,8 @@ if __name__ == "__main__":
     # * The sound_gen function creates all the voice overs for the flight states.
     # * If no internet, the function will stop itself. 
     # * States and sounds located in TEAMS_INFO folder json file.
-
-    #sound_gen(json_args_['flight_states'])
+    # sound_gen(json_args_['flight_states'])
+    
     # ! Main function that runs app 
     GroundControlApp().run()
    
