@@ -15,6 +15,11 @@ WindowManager:
             pos: self.pos
             size: self.size
             source: '../_static/bg4.jpeg'
+    Image:
+        pos: self.pos
+        pos_hint: {"center_x" : 0.52}
+        size: self.width, self.height
+        source: '../_static/SSDC_logo.png'
 
     MDBoxLayout:
 
@@ -46,13 +51,34 @@ WindowManager:
             MDBoxLayout:
                 orientation: "vertical"
                 Label:
-                    text: "Gator Team"
-                    font_name: "graph"
-                    font_size: 50
+                    text: "The Swamp"
+                    font_name: "Anta"
+                    font_size: 150
+                    color: "0021A5"
+                    outline_color: "FA4616"
+                    outline_width: 5
+                    pos_hint: {"center_x" : 0.5}
+                    
                 MDBoxLayout:
                     orientation: "horizontal"
                     Label:
-                        text:"Mission Desc"
+                        text:"\"The Earth is the cradle of humanity, but mankind cannot stay in the cradle forever\""
+                        font_name: "KodeMono"
+                        font_size: 30
+                        pos_hint: {"center_x" : 0.5}
+                        pos_hint: {"center_y" : -0.35}
+                        color: "FA4616"
+                        
+                        
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    Label:
+                        text:"Konstantin Tsiolkovsky"
+                        font_name: "KodeMono"
+                        font_size: 30
+                        color: "FA4616"
+                        pos_hint: {"center_x" : 0.5}
+                        
             # TODO Homepage work here
                 
                    
@@ -636,14 +662,25 @@ WindowManager:
             MDNavigationRailItem:
                 text: "GCS"
                 icon: "remote-desktop"
-                on_release:root.manager.current = "gcs"          
+                on_release:root.manager.current = "gcs"
+            
             MDNavigationRailItem:
-                text: "Import"
-                icon: "import"
+                text: "Export"
+                icon: "export"
                 on_release: root.file_manager_open()
 
         MDBoxLayout:
             id: main_layout
             orientation: "horizontal"
             spacing: '10dp'
+            
+            AltitudeFigure:
+            MDGridLayout: 
+                rows: 2
+                CustomDataTable:
+                # ! Anything else you can think of 
+        
+
     MDScreen:
+
+    
