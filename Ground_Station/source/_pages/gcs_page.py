@@ -22,7 +22,7 @@ from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 
 from tools.map_overlay import LineMapLayer
-from tools.gui_serial import SerialObject
+from tools.gui_serial import SerialObject, SimulationObject
 from tools.gui_serial import find_serial_port
 from tools.json_FR import read_json
 
@@ -47,6 +47,9 @@ class GCSPage(MDScreen):
     mission_time_curr = StringProperty(datetime.now())
     sim_mode_active = False
     sim_mode_enabled = False
+    sim_mode_active_gui = True
+    sim_mode_enabled_gui = False
+    SimObj = None
     # ! Zoom Values
     zoom_alt = NumericProperty(1)
     zoom_temp = NumericProperty(1)
@@ -69,9 +72,12 @@ class GCSPage(MDScreen):
     alt_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
     volt_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
     air_speed_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
-    temp_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
-    gyro_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
     
+    temp_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
+    
+    rotz_plot = LinePlot(color = [1, 1, 0, 1], line_width=1.5)
+    tiltx_plot = LinePlot(color = [1, 0, 1, 1], line_width=1.5)
+    tilty_plot =  LinePlot(color = [0, 1, 1, 1], line_width=1.5)
     
     def __init__(self, *args, **kwargs):
         super(GCSPage, self).__init__(*args, **kwargs)
@@ -139,6 +145,10 @@ class GCSPage(MDScreen):
             self.air_speed_plot.points = [(x, y) for x, y in enumerate(self.bird.collectable_data['air_speed'])]
             self.volt_plot.points = [(x, y) for x, y in enumerate(self.bird.collectable_data['voltage'])]
             self.temp_plot.points = [(x, y) for x, y in enumerate(self.bird.collectable_data['temperature'])]
+            self.rotz_plot.points = [(x, y) for x, y in enumerate(self.bird.collectable_data['rot_z'])]
+            self.tiltx_plot.points = [(x, y) for x, y in enumerate(self.bird.collectable_data['tilt_x'])]
+            self.tilty_plot.points = [(x, y) for x, y in enumerate(self.bird.collectable_data['tilt_y'])]
+            
             self.list_size = self.bird.current_data_size
             self.plot_data()
             
@@ -149,7 +159,9 @@ class GCSPage(MDScreen):
         self.alt_plot.points.append((self.list_size,self.bird.collectable_data['altitude'][-1]))
         self.air_speed_plot.points.append((self.list_size,self.bird.collectable_data['air_speed'][-1]))
         self.volt_plot.points.append((self.list_size,self.bird.collectable_data['voltage'][-1]))
-        self.gyro_plot.points.append((self.list_size,self.bird.collectable_data['tilt_x'][-1]))
+        self.tiltx_plot.points.append((self.list_size,self.bird.collectable_data['tilt_x'][-1]))
+        self.tilty_plot.points.append((self.list_size,self.bird.collectable_data['tilt_y'][-1]))
+        self.rotz_plot.points.append((self.list_size,self.bird.collectable_data['rot_z'][-1]))
         self.temp_plot.points.append((self.list_size,self.bird.collectable_data['temperature'][-1]))
         self.my_coordinates.append(self.bird.gps_single_container[-1])
         self.ids.current_loc.text = \
@@ -173,14 +185,10 @@ class GCSPage(MDScreen):
         self.ids.gps_map.add_marker(MapMarker(lat=self.my_coordinates[-1][0],
                                               lon=self.my_coordinates[-1][1]))  
         
-    def SIM_MODE(self):
-        # TODO figure out how to get the file given by the competition and then send it as a command
-        print("something sent")    
-        
     def plot_data(self):
         # ! RePlot and/or Trigger GPS to Update
         self.ids.alt.add_plot(self.alt_plot)
-        self.ids.gyro.add_plot(self.gyro_plot)
+        self.ids.gyro.add_plot(self.tiltx_plot, self.tilty_plot)
         self.ids.air_speed.add_plot(self.air_speed_plot)
         self.ids.temp.add_plot(self.temp_plot)
         self.ids.gps_map.trigger_update(True)
@@ -191,7 +199,7 @@ class GCSPage(MDScreen):
         if self.bird:
             self.bird.ResetData()
             self.ids.alt.remove_plot(self.alt_plot)
-            self.ids.gyro.remove_plot(self.gyro_plot)
+            #self.ids.gyro.remove_plot(self.gyro_plot)
             self.ids.air_speed.remove_plot(self.air_speed_plot)
             self.ids.temp.remove_plot(self.temp_plot)
             self.ids.gps_map.trigger_update(True)
@@ -348,10 +356,9 @@ class GCSPage(MDScreen):
         self.ids.mission_time_start.text = "Mission Time Start: [color=ff0000]{}[/color]"\
             .format(datetime.utcnow().strftime("%H:%M:%S.%f")[:-4])
         # TODO Comment this out when not testing out
-        self.bird.StartSerialObject()
+        #self.bird.StartSerialObject()
         self.bird.WriteSerialData(command="CX", data_to_write="ON")
-        if self.sim_mode_enabled and self.sim_mode_active:
-            self.SIM_MODE()
+        if self.sim_mode_enabled and self.sim_mode_active: self.SimObj.SimObj_launch(True)
         self.ids.analysis_tool.disabled = True
         self.ids.home_icon.disabled = True
         self.audio_tool, self.reset_tool, self.cal_tool, self.sim_tool = True, True, True, True
@@ -369,6 +376,7 @@ class GCSPage(MDScreen):
                                               lon=self.my_coordinates[-1][1]))
         self.ids.analysis_tool.disabled = False
         self.ids.home_icon.disabled = False
+        if self.sim_mode_enabled and self.sim_mode_active: self.SimObj.SimObj_launch(False)
         self.start_dialog.dismiss()
         
     # * ================== SIM Dialog and tools =====================
@@ -382,12 +390,14 @@ class GCSPage(MDScreen):
                     MDRaisedButton(
                         text="ENABLE",
                         theme_text_color="Custom",
-                        on_release= self.sim_enable_helper
+                        on_release= self.sim_enable_helper,
+                        disabled= self.sim_mode_enabled_gui
                     ),
                     MDRaisedButton(
                         text="ACTIVATE",
                         theme_text_color="Custom",
-                        on_release= self.sim_activate_helper
+                        on_release= self.sim_activate_helper,
+                        disabled = self.sim_mode_active_gui
                     ),
                     MDFlatButton(
                         text="DISABLE",
@@ -399,21 +409,29 @@ class GCSPage(MDScreen):
         self.sim_dialog.open()
         
     def sim_enable_helper(self,instance):
-        self.bird.WriteSerialData("SIM", "ENABLE")
+        #self.bird.WriteSerialData("SIM", "ENABLE") TODO uncomment
         self.ids.sim_mode.text = "SIM Mode: [color=ffff00]{}[/color]".format("ENABLED")
         self.sim_mode_enabled = True
+        self.SimObj = SimulationObject()
+        
         self.bird.WriteSerialData(command="SIM", data_to_write="ENABLE")
         # TODO: Write command that is necessary to send enable message
     def sim_activate_helper(self,instance):
-        self.bird.WriteSerialData("SIM", "ACTIVATE")
+        # self.bird.WriteSerialData("SIM", "ACTIVATE") TODO uncomment
         self.ids.sim_mode.text = "SIM Mode: [color=00ff00]{}[/color]".format("ACTIVATED")
         self.sim_mode_active = True
+        if self.SimObj is not None: self.SimObj.ActivateSimObj();
+        #elif self.SimObj 
+    
         self.bird.WriteSerialData(command="SIM", data_to_write="ACTIVATE")
         # TODO: Write command that is necessary to send activate message
     def sim_disable_helper(self,instance):
-        self.bird.WriteSerialData("SIM", "DISABLE")
+        # self.bird.WriteSerialData("SIM", "DISABLE") TODO uncomment
         self.ids.sim_mode.text = "SIM Mode: [color=ff0000]{}[/color]".format("DISABLED")
         self.sim_mode_active, self.sim_mode_enabled = False,False
+        if self.SimObj is not None:
+            self.SimObj.Kill_SimObj()
+            del self.SimObj
         self.bird.WriteSerialData(command="SIM", data_to_write="DISABLE")
         # TODO: Write command that is necessary to send disable message
         self.sim_dialog.dismiss()

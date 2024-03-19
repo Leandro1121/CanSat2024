@@ -3,7 +3,7 @@
 *             The University of Florida               *
 *             Space Systems Design Club               *
 *                     CanSat 2024                     *
-*                        Team:                        *
+*                Team: 2024 The Swamp                 *
 *                     Authored by:                    *
 *    Leandro Sanchez,                                 *
 # ! ***************************************************

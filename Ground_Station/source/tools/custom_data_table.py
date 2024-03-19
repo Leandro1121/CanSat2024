@@ -38,39 +38,34 @@ class CustomDataTable(MDBoxLayout):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-
         self.parseData(r"Ground_Station\_flight_recordings\flight-record_admin_.csv")
         self.showData()
-        print(self.row_data)
-
+        # while 1:
+        #     pass
+        
         data_tables = MDDataTable(
             size_hint=(0.9, 0.6),
             column_data=[
-
-                ("Column 1", dp(20)),
-                ("Column 2", dp(30)),
-                ("Column 3", dp(50), self.sort_on_col_3),
-                ("Column 4", dp(30)),
-                ("Column 5", dp(30)),
-                ("Column 6", dp(30)),
-                ("Column 7", dp(30), self.sort_on_col_2),
+                ("Packet Number", dp(20)),
+                ("Flight State", dp(30)),
+                ("Altitude", dp(50), self.sort_on_col_3)
             ],
-            row_data= self.row_data[
+            row_data= self.row_data)
                 #The number of elements must match the length
                 #of the `column_data` list.
                 #just make columns mimic the showdata function
-                (
-                    "1",
-                    ("alert", [255 / 256, 165 / 256, 0, 1], "No Signal"),
-                    "Astrid: NE shared managed",
-                    "Medium",
-                    "Triaged",
-                    "0:33", 
-                    "Chase Nguyen",
-                )
-                ]
-         self.add_widget(data_tables)
-
+                # (
+                #     "1",
+                #     ("alert", [255 / 256, 165 / 256, 0, 1], "No Signal"),
+                #     "Astrid: NE shared managed",
+                #     "Medium",
+                #     "Triaged",
+                #     "0:33", 
+                #     "Chase Nguyen",
+                # )
+                
+        self.add_widget(data_tables)
+        
 
     def sort_on_col_3(self, data):
         return zip(
@@ -104,15 +99,20 @@ class CustomDataTable(MDBoxLayout):
 
     def showData(self):
         i = 0
-
-        self.row_data.append((i, self.mainDict["flight_state"][i], self.mainDict["altitude"][i], self.mainDict["packet_count"][i]))
-
+        self.row_data.append((self.mainDict["packet_count"][i], 
+                              self.mainDict["flight_state"][i], 
+                              self.mainDict["altitude"][i], 
+                              ))
         for i in range(len(self.mainDict["flight_state"]) - 1):
 
             if self.mainDict["flight_state"][i] == self.mainDict["flight_state"][i + 1]:
                 continue
             else:
-                self.row_data.append((i + 1, self.mainDict["flight_state"][i + 1], self.mainDict["altitude"][i + 1], self.mainDict["packet_count"][i + 1]))
+                self.row_data.append((self.mainDict["packet_count"][i + 1], 
+                                      self.mainDict["flight_state"][i + 1], 
+                                      self.mainDict["altitude"][i + 1]
+                                      ))
+
 
 
 
