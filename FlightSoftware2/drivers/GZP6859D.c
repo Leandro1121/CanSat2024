@@ -9,7 +9,7 @@ void GZP_SET_REG(I2C_HandleTypeDef* hi2c, uint8_t reg_addr, uint8_t input){
 	//I2c_HandleTypeDef, device addr, addr to write to on device,
 	//memaddsize, input, size, timeout
 
-	//check if it works? add later todo
+	//check if it works with status return val? add later todo
 	//status = Hal_I2C_Mem_Write(&hi2c,GZP_I2C_ADDR,reg_addr,1,input,1,50);
 
 	HAL_I2C_Mem_Write(&hi2c,GZP_I2C_ADDR,reg_addr,1,input,1,50);
@@ -27,7 +27,7 @@ uint8_t GZP_READ_REG(I2C_HandleTypeDef* hi2c, uint8_t reg_addr){
 	return output;
 }
 
-void GZP_READ_DATA(I2C_HandleTypeDef* hi2c, uint8_t reg_addr){
+void GZP_READ_DATA(I2C_HandleTypeDef* hi2c, uint8_t* combined){
 	uint8_t check = 1 << 3;
 
 	GZP_SET_REG(hi2c, CMD, REQUEST_CMD);
@@ -36,12 +36,12 @@ void GZP_READ_DATA(I2C_HandleTypeDef* hi2c, uint8_t reg_addr){
 	while((GZP_READ_REG(hi2c, SYS_CFG) & check) != check);
 
 	//read first 3 pressure, next 2 temp into same array
-	combined = (uint8_t*) malloc(5);
+	//combined = (uint8_t*) malloc(5);
 	HAL_I2C_Mem_Read(&hi2c,GZP_I2C_ADDR,START_ADDR | 0x01,1,&combined,5,50);
 	//return out;
 }
 
-float GZP_READ_PRESSURE(){
+double GZP_READ_PRESSURE(uint8_t* combined){
 	uint32_t pressure_ADC = combined[0] * 65536 + combined[1] * 256 + combined[2];
 	uint32_t check_sign = 1 << 23;
 
@@ -51,19 +51,32 @@ float GZP_READ_PRESSURE(){
 		return pressure_ADC / K_VAL;
 	}
 
-	return (pressure_ADC - 2^24) / K_VAL;
+	return (pressure_ADC - (2^24)) / K_VAL;
 }
 
-float GZP_READ_TEMP(){
+double GZP_READ_TEMP(uint8_t* combined){
 	uint32_t temp_ADC = combined[3] * 256 + combined[4];
 	uint32_t check_sign = 1 << 15;
 
 	//convert ADC to C units:
 	//bit 15 is 0, positive
-	free(combined);
 	if((temp_ADC & check_sign) != check_sign){
-		return (float)(temp_ADC / 256); //from GZP6859D datasheet
+		return (double)(temp_ADC / 256); //from GZP6859D datasheet
+	}else{
+		return (double)((temp_ADC - (2^16)) / 256); //""
 	}
+}
 
-	return (float)((temp_ADC - 2^16) / 256); //""
+double GZP_CALC_SPEED(I2C_HandleTypeDef* hi2c){
+	uint8_t* combined[5];
+	GZP_READ_DATA(hi2c,*combined);
+	double R = 287; // J/kg/K
+	double P = GZP_READ_PRESSURE(*combined);
+	double T = GZP_READ_TEMP(*combined);
+	free(combined);
+	//air density = pressure / (temp * specific gas constant)
+	// kg/m^3 = (Pa or N/m^2) / (K * J/kg/K)
+	double p = P / (T * R);
+	double velocity = (2 * P) / p;
+	return sqrt(velocity); //sqrt(2P/p)
 }
