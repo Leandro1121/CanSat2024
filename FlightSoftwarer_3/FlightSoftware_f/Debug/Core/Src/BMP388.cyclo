@@ -1,0 +1,7 @@
+BMP388.c:11:6:fill_calibration_params	1
+BMP388.c:30:6:set_coeff	1
+BMP388.c:47:6:get_compensated	2
+BMP388.c:70:6:get_pressure_compensated	1
+BMP388.c:103:6:calibrate_sensor	1
+BMP388.c:112:6:configure_sensor	1
+BMP388.c:143:16:BMP388_sensor_create	2

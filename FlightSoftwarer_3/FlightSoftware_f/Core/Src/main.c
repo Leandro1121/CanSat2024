@@ -19,11 +19,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "GZP6859D.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "GZP6859D.h"
+#include "BMP388.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,8 +40,7 @@
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
-uint8_t GPS_Buffer[100];
-uint8_t GZP_Buffer[10];
+
 /* Private variables ---------------------------------------------------------*/
 
 I2C_HandleTypeDef hi2c4;
@@ -55,7 +54,9 @@ osThreadId XBEE_ThreadHandle;
 osThreadId BMP388_ThreadHandle;
 osThreadId GZP_ThreadHandle;
 /* USER CODE BEGIN PV */
-
+uint8_t GPS_Buffer[100];
+uint8_t GZP_Buffer[5];
+uint8_t BMP388_Buffer[10];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,26 +131,26 @@ int main(void)
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* definition and creation of defaultTask */
+//  /* Create the thread(s) */
+//  /* definition and creation of defaultTask */
 //  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
 //  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
-  /* definition and creation of GPS_Thread */
+//
+//  /* definition and creation of GPS_Thread */
 //  osThreadDef(GPS_Thread, GPS_Entry, osPriorityNormal, 0, 128);
 //  GPS_ThreadHandle = osThreadCreate(osThread(GPS_Thread), NULL);
-
-  /* definition and creation of XBEE_Thread */
+//
+//  /* definition and creation of XBEE_Thread */
 //  osThreadDef(XBEE_Thread, XBEE_Entry, osPriorityHigh, 0, 128);
 //  XBEE_ThreadHandle = osThreadCreate(osThread(XBEE_Thread), NULL);
 
-  /* definition and creation of BMP388_Thread */
-//  osThreadDef(BMP388_Thread, BMP388_Entry, osPriorityNormal, 0, 128);
+//  /* definition and creation of BMP388_Thread */
+//  osThreadDef(BMP388_Thread, BMP388_Entry, osPriorityIdle, 0, 128);
 //  BMP388_ThreadHandle = osThreadCreate(osThread(BMP388_Thread), NULL);
 
-  /* definition and creation of GZP_Thread */
-  osThreadDef(GZP_Thread, GZP_Entry, osPriorityIdle, 0, 128);
-  GZP_ThreadHandle = osThreadCreate(osThread(GZP_Thread), NULL);
+//  /* definition and creation of GZP_Thread */
+//  osThreadDef(GZP_Thread, GZP_Entry, osPriorityIdle, 0, 128);
+//  GZP_ThreadHandle = osThreadCreate(osThread(GZP_Thread), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -244,7 +245,7 @@ static void MX_I2C4_Init(void)
 
   /* USER CODE END I2C4_Init 1 */
   hi2c4.Instance = I2C4;
-  hi2c4.Init.Timing = 0x10909CEC;
+  hi2c4.Init.Timing = 0x00702991;
   hi2c4.Init.OwnAddress1 = 0;
   hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -541,10 +542,16 @@ void BMP388_Entry(void const * argument)
 {
   /* USER CODE BEGIN BMP388_Entry */
   /* Infinite loop */
+	BMP388_sensor *sensor = BMP388_sensor_create();
+	sensor->configure_sensor((BMP388_sensor *)sensor, &hi2c4);
   for(;;)
   {
-	  osDelay(1);
+	  sensor->get_compensated((BMP388_sensor *)sensor, &hi2c4);
+	  float temp = sensor->data.T_LIN; //-> C
+	  float press = sensor->data.P_LIN; // -> Pa
+	  osDelay(100);
   }
+  free(sensor);
   /* USER CODE END BMP388_Entry */
 }
 
@@ -562,6 +569,9 @@ void GZP_Entry(void const * argument)
   for(;;)
   {
 	GZP_READ_DATA(&hi2c4, (uint8_t *) GZP_Buffer);
+	double gzp_press = GZP_READ_PRESSURE((uint8_t *) GZP_Buffer);
+	double gzp_temp = GZP_READ_TEMP((uint8_t *) GZP_Buffer);
+	double gzp_speed = GZP_CALC_SPEED(&hi2c4);
 	osDelay(100);
 
   }
