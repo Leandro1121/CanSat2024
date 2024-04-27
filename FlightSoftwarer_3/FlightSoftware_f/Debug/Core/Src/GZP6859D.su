@@ -1,0 +1,6 @@
+../Core/Src/GZP6859D.c:15:6:GZP_SET_REG	32	static
+../Core/Src/GZP6859D.c:31:9:GZP_READ_REG	40	static
+../Core/Src/GZP6859D.c:37:6:GZP_READ_DATA	40	static
+../Core/Src/GZP6859D.c:51:8:GZP_READ_PRESSURE	24	static
+../Core/Src/GZP6859D.c:64:8:GZP_READ_TEMP	24	static
+../Core/Src/GZP6859D.c:77:8:GZP_CALC_SPEED	80	static

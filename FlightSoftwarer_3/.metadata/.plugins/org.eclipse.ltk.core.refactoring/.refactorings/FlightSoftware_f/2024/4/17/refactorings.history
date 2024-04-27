@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;FlightSoftware_f/Drivers/GZP6859D/GZP66859D.h&apos; to &apos;GZP6859D.h&apos;" description="Rename resource &apos;GZP66859D.h&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Drivers/GZP6859D/GZP66859D.h" name="GZP6859D.h" stamp="1714186568181" updateReferences="true"/>
+</session>

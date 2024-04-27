@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "GZP6859D.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,8 +40,11 @@
 /* USER CODE BEGIN PM */
 
 /* USER CODE END PM */
-
+uint8_t GPS_Buffer[100];
+uint8_t GZP_Buffer[10];
 /* Private variables ---------------------------------------------------------*/
+
+I2C_HandleTypeDef hi2c4;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
@@ -48,6 +52,8 @@ UART_HandleTypeDef huart3;
 osThreadId defaultTaskHandle;
 osThreadId GPS_ThreadHandle;
 osThreadId XBEE_ThreadHandle;
+osThreadId BMP388_ThreadHandle;
+osThreadId GZP_ThreadHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -57,9 +63,12 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_I2C4_Init(void);
 void StartDefaultTask(void const * argument);
 void GPS_Entry(void const * argument);
 void XBEE_Entry(void const * argument);
+void BMP388_Entry(void const * argument);
+void GZP_Entry(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -100,6 +109,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   MX_USART1_UART_Init();
+  MX_I2C4_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -122,16 +132,24 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of GPS_Thread */
-  osThreadDef(GPS_Thread, GPS_Entry, osPriorityNormal, 0, 128);
-  GPS_ThreadHandle = osThreadCreate(osThread(GPS_Thread), NULL);
+//  osThreadDef(GPS_Thread, GPS_Entry, osPriorityNormal, 0, 128);
+//  GPS_ThreadHandle = osThreadCreate(osThread(GPS_Thread), NULL);
 
   /* definition and creation of XBEE_Thread */
-  osThreadDef(XBEE_Thread, XBEE_Entry, osPriorityHigh, 0, 128);
-  XBEE_ThreadHandle = osThreadCreate(osThread(XBEE_Thread), NULL);
+//  osThreadDef(XBEE_Thread, XBEE_Entry, osPriorityHigh, 0, 128);
+//  XBEE_ThreadHandle = osThreadCreate(osThread(XBEE_Thread), NULL);
+
+  /* definition and creation of BMP388_Thread */
+//  osThreadDef(BMP388_Thread, BMP388_Entry, osPriorityNormal, 0, 128);
+//  BMP388_ThreadHandle = osThreadCreate(osThread(BMP388_Thread), NULL);
+
+  /* definition and creation of GZP_Thread */
+  osThreadDef(GZP_Thread, GZP_Entry, osPriorityIdle, 0, 128);
+  GZP_ThreadHandle = osThreadCreate(osThread(GZP_Thread), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -211,6 +229,54 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief I2C4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C4_Init(void)
+{
+
+  /* USER CODE BEGIN I2C4_Init 0 */
+
+  /* USER CODE END I2C4_Init 0 */
+
+  /* USER CODE BEGIN I2C4_Init 1 */
+
+  /* USER CODE END I2C4_Init 1 */
+  hi2c4.Instance = I2C4;
+  hi2c4.Init.Timing = 0x10909CEC;
+  hi2c4.Init.OwnAddress1 = 0;
+  hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c4.Init.OwnAddress2 = 0;
+  hi2c4.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c4.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c4.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c4, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c4, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C4_Init 2 */
+
+  /* USER CODE END I2C4_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -226,7 +292,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 96000;
+  huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -322,6 +388,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -440,7 +507,7 @@ void GPS_Entry(void const * argument)
   {
 	  HAL_UART_Receive(&huart3, (uint8_t *)GPS_Buffer, sizeof(GPS_Buffer), 1000);
 
-	  int _ = 0;
+	  //int _ = 0;
   }
   /* USER CODE END GPS_Entry */
 }
@@ -461,6 +528,44 @@ void XBEE_Entry(void const * argument)
     osDelay(1);
   }
   /* USER CODE END XBEE_Entry */
+}
+
+/* USER CODE BEGIN Header_BMP388_Entry */
+/**
+* @brief Function implementing the BMP388_Thread thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_BMP388_Entry */
+void BMP388_Entry(void const * argument)
+{
+  /* USER CODE BEGIN BMP388_Entry */
+  /* Infinite loop */
+  for(;;)
+  {
+	  osDelay(1);
+  }
+  /* USER CODE END BMP388_Entry */
+}
+
+/* USER CODE BEGIN Header_GZP_Entry */
+/**
+* @brief Function implementing the GZP_Thread thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_GZP_Entry */
+void GZP_Entry(void const * argument)
+{
+  /* USER CODE BEGIN GZP_Entry */
+  /* Infinite loop */
+  for(;;)
+  {
+	GZP_READ_DATA(&hi2c4, (uint8_t *) GZP_Buffer);
+	osDelay(100);
+
+  }
+  /* USER CODE END GZP_Entry */
 }
 
 /**

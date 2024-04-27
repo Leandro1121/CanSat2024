@@ -1,3 +1,4 @@
+"./Core/Src/GZP6859D.o"
 "./Core/Src/freertos.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32h7xx_hal_msp.o"
