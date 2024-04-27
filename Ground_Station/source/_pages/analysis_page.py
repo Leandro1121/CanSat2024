@@ -90,8 +90,9 @@ class AnalysisPage(MDScreen):
         self.set_graph_values(path)
         self.ids.main_layout.clear_widgets()
            
+        self.ids.main_layout.add_widget(AltitudeFigure())   
         self.ids.main_layout.add_widget(CustomDataTable())
-        self.ids.main_layout.add_widget(AltitudeFigure())
+        
         
 
     def set_graph_values(self, filename):

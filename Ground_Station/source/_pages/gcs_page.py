@@ -31,6 +31,7 @@ from datetime import datetime
 json_args_ = read_json()
 flight_vals = json_args_['flight_vals']
 collectables = json_args_['collectable_data']
+current_checked_port = None
 
 class GCSPage(MDScreen):
     # ! Dialog Start values must be set to None to be initialized, otherwise when
@@ -251,7 +252,7 @@ class GCSPage(MDScreen):
         
         self.ids.mission_time_start.markup = True
         self.ids.current_loc.markup = True
-        self.ids.selected_loc.markup = True
+        self.ids.selected_loc.markup = True 
         self.ids.gps_time.markup = True
         
         self.ids.mission_time_curr.markup = True
@@ -421,7 +422,6 @@ class GCSPage(MDScreen):
         self.ids.sim_mode.text = "SIM Mode: [color=00ff00]{}[/color]".format("ACTIVATED")
         self.sim_mode_active = True
         if self.SimObj is not None: self.SimObj.ActivateSimObj();
-        #elif self.SimObj 
     
         self.bird.WriteSerialData(command="SIM", data_to_write="ACTIVATE")
         # TODO: Write command that is necessary to send activate message
@@ -462,6 +462,7 @@ class GCSPage(MDScreen):
     # * ================== Setup Dialog and tools =================== 
            
     def setup_dialog_func(self):
+        self.setup_dialog = None
         if not self.setup_dialog:
             self.setup_dialog = MDDialog(
                 title="Select CanSat Connection",
@@ -582,15 +583,15 @@ class Content(MDBoxLayout):
 
 class ItemConfirm(OneLineAvatarIconListItem):
     divider = None
-    
     def set_icon(self, instance_check):
         instance_check.active = True
         check_list = instance_check.get_widgets(instance_check.group)
         for check in check_list:
             if check != instance_check:
                 check.active = False
-    
+                
     def on_touch_up(self, touch):
-        global current_checked_port
-        current_checked_port = self.text.split(" - ")[0]
+        if self.collide_point(*touch.pos):
+        # The touch has occurred inside the widgets area. Do stuff!
+            current_checked_port = self.text.split(" - ")[0]
         return super().on_touch_up(touch)

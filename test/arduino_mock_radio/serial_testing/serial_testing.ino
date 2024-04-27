@@ -21,6 +21,7 @@ double TILT_Y = 50;
 double ROT_Z = 50;
 String CMD_ECHO = "CXON";
 bool cont = false;
+bool sim_loop = false; 
 void setup() {
   // put your setup code here, to run once:
 Serial.begin(9600);
@@ -34,13 +35,18 @@ void loop() {
 if (Serial.available() > 0){
   String comm = Serial.readString();
   
-  if (comm == "CMD,1071,CX,ON"){
+  if (comm == "CMD,2062,CX,ON"){
     cont = true; 
   }
-  else if (comm == "CMD,1071,CX,OFF"){
+  else if (comm == "CMD,2062,CX,OFF"){
     cont = false;
   }
+
+  else  sim_loop = true;
+
 }
+
+while (Serial.available() == 0)
 
 //if (cont == false) return;
 

@@ -112,7 +112,3 @@ class CustomDataTable(MDBoxLayout):
                                       self.mainDict["flight_state"][i + 1], 
                                       self.mainDict["altitude"][i + 1]
                                       ))
-
-
-
-

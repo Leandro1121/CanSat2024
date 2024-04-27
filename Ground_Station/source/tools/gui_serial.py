@@ -93,10 +93,10 @@ class SerialObject():
                 self.serial_connection = True
             except serial.SerialException as b:
                 print(f'Serial Port not available: Error:(0001) \n {b}')
-                return
+                return None
             except Exception as e:
                 print(e)
-                return
+                return None
             finally:
                 self.collectable_data = {}
                 self.gps_single_container = []
@@ -192,7 +192,7 @@ class SerialObject():
         * dictionary and a CSV file. If data is not provided or is an empty string, the method will not
         * execute any further
         """
-        if data.startswith("1071"):
+        if data.startswith("2062"):
 
             self.data_container = data.split(",")
 
