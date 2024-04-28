@@ -103,6 +103,7 @@ void Error_Handler(void);
 #define LD2_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define check (1 << 15)
 
 /* USER CODE END Private defines */
 

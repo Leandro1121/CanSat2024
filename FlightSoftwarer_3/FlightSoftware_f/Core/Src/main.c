@@ -59,6 +59,9 @@ osThreadId ICM_ThreadHandle;
 uint8_t GPS_Buffer[100];
 uint8_t GZP_Buffer[5];
 uint8_t BMP388_Buffer[10];
+
+uint8_t PACKET[21][10];
+uint16_t control = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -134,26 +137,26 @@ int main(void)
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
-//  /* Create the thread(s) */
-//  /* definition and creation of defaultTask */
-//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-//
-//  /* definition and creation of GPS_Thread */
-//  osThreadDef(GPS_Thread, GPS_Entry, osPriorityNormal, 0, 128);
-//  GPS_ThreadHandle = osThreadCreate(osThread(GPS_Thread), NULL);
-//
-//  /* definition and creation of XBEE_Thread */
-//  osThreadDef(XBEE_Thread, XBEE_Entry, osPriorityHigh, 0, 128);
-//  XBEE_ThreadHandle = osThreadCreate(osThread(XBEE_Thread), NULL);
-//
-//  /* definition and creation of BMP388_Thread */
-//  osThreadDef(BMP388_Thread, BMP388_Entry, osPriorityIdle, 0, 128);
-//  BMP388_ThreadHandle = osThreadCreate(osThread(BMP388_Thread), NULL);
-//
-//  /* definition and creation of GZP_Thread */
-//  osThreadDef(GZP_Thread, GZP_Entry, osPriorityIdle, 0, 128);
-//  GZP_ThreadHandle = osThreadCreate(osThread(GZP_Thread), NULL);
+  /* Create the thread(s) */
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of GPS_Thread */
+  osThreadDef(GPS_Thread, GPS_Entry, osPriorityIdle, 0, 128);
+  GPS_ThreadHandle = osThreadCreate(osThread(GPS_Thread), NULL);
+
+  /* definition and creation of XBEE_Thread */
+  osThreadDef(XBEE_Thread, XBEE_Entry, osPriorityIdle, 0, 128);
+  XBEE_ThreadHandle = osThreadCreate(osThread(XBEE_Thread), NULL);
+
+  /* definition and creation of BMP388_Thread */
+  osThreadDef(BMP388_Thread, BMP388_Entry, osPriorityIdle, 0, 128);
+  BMP388_ThreadHandle = osThreadCreate(osThread(BMP388_Thread), NULL);
+
+  /* definition and creation of GZP_Thread */
+  osThreadDef(GZP_Thread, GZP_Entry, osPriorityIdle, 0, 128);
+  GZP_ThreadHandle = osThreadCreate(osThread(GZP_Thread), NULL);
 
   /* definition and creation of ICM_Thread */
   osThreadDef(ICM_Thread, ICM_Entry, osPriorityIdle, 0, 128);
@@ -300,7 +303,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -308,7 +311,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV2;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
   if (HAL_UART_Init(&huart1) != HAL_OK)
   {
@@ -348,7 +351,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 9600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -356,7 +359,7 @@ static void MX_USART3_UART_Init(void)
   huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart3.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart3.Init.ClockPrescaler = UART_PRESCALER_DIV2;
   huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
   if (HAL_UART_Init(&huart3) != HAL_OK)
   {
@@ -492,7 +495,19 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	  // Let Bit mask know, you would like to read
+	  osDelay(10000);
+	  for(;;){
+		  control |= check;
+		  if (control && !(control & (control - 1))){
+			  osDelay(10);
+			  control &= ~(check);
+		  }
+		  else continue;
+	  }
+
+
+
   }
   /* USER CODE END 5 */
 }
@@ -511,9 +526,20 @@ void GPS_Entry(void const * argument)
 
 	// Sending Configuration String to GPS
 	HAL_UART_Transmit(&huart3, (uint8_t *)PMTK_SET_NMEA_OUTPUT_GGAONLY, sizeof(PMTK_SET_NMEA_OUTPUT_GGAONLY), 500);
+
   for(;;)
   {
-	  HAL_UART_Receive(&huart3, (uint8_t *)GPS_Buffer, sizeof(GPS_Buffer), 1000);
+	  	 // Bit-mapping Mutex Alike
+		if ((control & check) != check){
+			//Set this threads bit to 1 to let other threads know its occupied
+			control |= (1 << 0);
+			//Code goes in here
+			HAL_UART_Receive(&huart3, (uint8_t *)GPS_Buffer, sizeof(GPS_Buffer), 1000);
+			PACKET[5][0] = 'c';
+			//Set this thread bit back off
+			control &= ~(1 << 0);
+		}
+
 
 	  //int _ = 0;
   }
@@ -531,9 +557,27 @@ void XBEE_Entry(void const * argument)
 {
   /* USER CODE BEGIN XBEE_Entry */
   /* Infinite loop */
+
   for(;;)
   {
-    osDelay(1);
+	  //uint8_t AT_SH [100] = { "This is a test"};
+	  // Bit-mapping Mutex Alike
+		if ((control & check) != check){
+			//Set this threads bit to 1 to let other threads know its occupied
+			control |= (1 << 1);
+			//Code goes in here
+			// Sending Message to other USB.
+				//HAL_UART_Transmit(&huart1, (uint8_t *)AT_SH, 20, 1000);
+
+			//This is how to receive a mesage from XBee
+//				if (HAL_UART_Receive(&huart1, (uint8_t *)AT_SH, 1, 0) == HAL_OK){
+//					auto t = HAL_UART_Receive(&huart1, (uint8_t *)(AT_SH+1), 80, 1000);
+//					int i = 9;
+//					osDelay(1000);
+//				}
+				//Set this thread bit back off
+				control &= ~(1 << 1);
+		}
   }
   /* USER CODE END XBEE_Entry */
 }
@@ -553,10 +597,19 @@ void BMP388_Entry(void const * argument)
 	sensor->configure_sensor((BMP388_sensor *)sensor, &hi2c4);
   for(;;)
   {
-	  sensor->get_compensated((BMP388_sensor *)sensor, &hi2c4);
-	  float temp = sensor->data.T_LIN; //-> C
-	  float press = sensor->data.P_LIN; // -> Pa
-	  osDelay(100);
+	  // Bit-mapping Mutex Alike
+		if ((control & check) != check){
+			//Set this threads bit to 1 to let other threads know its occupied
+			control |= (1 << 2);
+			//Code goes in here
+			  sensor->get_compensated((BMP388_sensor *)sensor, &hi2c4);
+			  float temp = sensor->data.T_LIN; //-> C
+			  float press = sensor->data.P_LIN; // -> Pa
+			  PACKET[5][0] = 'c';
+			//Set this thread bit back off
+			  control &= ~(1 << 2);
+	}
+
   }
   free(sensor);
   /* USER CODE END BMP388_Entry */
@@ -575,11 +628,21 @@ void GZP_Entry(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	GZP_READ_DATA(&hi2c4, (uint8_t *) GZP_Buffer);
-	double gzp_press = GZP_READ_PRESSURE((uint8_t *) GZP_Buffer);
-	double gzp_temp = GZP_READ_TEMP((uint8_t *) GZP_Buffer);
-	double gzp_speed = GZP_CALC_SPEED(&hi2c4);
-	osDelay(100);
+	  // Bit-mapping Mutex Alike
+		if ((control & check) != check){
+			//Set this threads bit to 1 to let other threads know its occupied
+			control |= (1 << 3);
+			//Code goes in here
+			GZP_READ_DATA(&hi2c4, (uint8_t *) GZP_Buffer);
+			double gzp_press = GZP_READ_PRESSURE((uint8_t *) GZP_Buffer);
+			double gzp_temp = GZP_READ_TEMP((uint8_t *) GZP_Buffer);
+			double gzp_speed = GZP_CALC_SPEED(&hi2c4);
+			PACKET[5][0] = 'c';
+			osDelay(100);
+			//Set this thread bit back off
+			control &= ~(1 << 3);
+		}
+
 
   }
   /* USER CODE END GZP_Entry */
@@ -601,9 +664,18 @@ void ICM_Entry(void const * argument)
 
   for(;;)
   {
-	icm_sensor->collect_data((ICM_data *)icm_sensor,  &hi2c4);
-	double gyro_x = icm_sensor->GYRO_Y;
-    osDelay(10);
+	  // Bit-mapping Mutex Alike
+	  			if ((control & check) != check){
+	  				//Set this threads bit to 1 to let other threads know its occupied
+	  				control |= (1 << 4);
+	  				//Code goes in here
+	  				icm_sensor->collect_data((ICM_data *)icm_sensor,  &hi2c4);
+	  				double gyro_x = icm_sensor->GYRO_Y;
+	  				PACKET[5][0] = 'c';
+	  				//Set this thread bit back off
+	  				control &= ~(1 << 4);
+	  		}
+
   }
   /* USER CODE END ICM_Entry */
 }
