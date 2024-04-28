@@ -2,7 +2,7 @@
  * BMP388.h
  *
  *  Created on: Apr 27, 2024
- *      Author: leand
+ *      Author: Leandro Sanchez
  */
 
 #ifndef INC_BMP388_H_

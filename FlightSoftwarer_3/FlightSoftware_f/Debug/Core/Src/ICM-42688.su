@@ -1,0 +1,3 @@
+../Core/Src/ICM-42688.c:10:11:ICM_sensor_create	16	static
+../Core/Src/ICM-42688.c:18:6:setup_ICM	40	static
+../Core/Src/ICM-42688.c:35:6:collect_data	48	static

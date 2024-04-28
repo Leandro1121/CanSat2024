@@ -1,0 +1,49 @@
+/*
+ * ICM-42688.c
+ *
+ *  Leandro Sanchez
+ */
+
+#include "ICM-42688.h"
+
+
+ICM_data *ICM_sensor_create() {
+    ICM_data *sensor = (ICM_data *)malloc(sizeof(ISM_data));
+    if (sensor) {
+        sensor->collect_data = collect_data;
+    }
+    return sensor;
+}
+//
+//void setup_ICM (I2C_HandleTypeDef* hi2c){
+//		uint8_t sf  = SOFT_RESET;
+//		uint8_t osr = OSR_SETTINGS;
+//		uint8_t pwr = PWR_SETTINGS;
+//		uint8_t iir = IIR_FILTER;
+//		uint8_t odr = ODR_SETTING;
+//
+//		HAL_I2C_Mem_Write((I2C_HandleTypeDef*)hi2c, DEVICE_ADDR, CMD_BMP, sizeof(uint8_t), &sf,sizeof(uint8_t), 100);
+//		HAL_Delay(250);
+//
+//		sensor->calibrate_sensor(sensor, (I2C_HandleTypeDef*)hi2c);
+//		HAL_Delay(250);
+//
+//		HAL_I2C_Mem_Write((I2C_HandleTypeDef*)hi2c, DEVICE_ADDR, CONFIG, 1, &iir,1, 100);
+//		HAL_Delay(250);
+//
+//		HAL_I2C_Mem_Write((I2C_HandleTypeDef*)hi2c, DEVICE_ADDR, ODR, 1, &odr,1, 100);
+//		HAL_Delay(250);
+//
+//
+//		HAL_I2C_Mem_Write((I2C_HandleTypeDef*)hi2c, DEVICE_ADDR, OSR, 1, &osr,1, 100);
+//		HAL_Delay(250);
+//
+//
+//		HAL_I2C_Mem_Write((I2C_HandleTypeDef*)hi2c, DEVICE_ADDR, PWR_CTRL, 1, &pwr,1, 100);
+//		HAL_Delay(250);
+//}
+//void collect_data (struct ICM_data *sensor, I2C_HandleTypeDef* hi2c){
+//
+//
+//
+//}
